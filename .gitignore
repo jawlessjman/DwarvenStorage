@@ -1,0 +1,74 @@
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Visual Studio
+.vs/
+
+# Build output
+bin/
+obj/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+
+# NuGet
+packages/
+.nuget/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# BepInEx runtime folders (if copied locally)
+BepInEx/
+doorstop_libs/
+unstripped_corlib/
+
+# Valheim generated files
+valheim_server_Data/
+valheim_Data/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Crash dumps
+*.dmp
+
+# Generated config files
+*.cfg
+
+# Ignore copied plugin outputs
+plugins/
+
+# Ignore Rider cache
+.idea_modules/
+
+# Ignore test/build artifacts
+TestResults/
+
+# Ignore embedded build outputs
+publish/
+
+# Optional: Ignore local translation overrides
+Translations/
+
+# Keep embedded source assets tracked
+!Assets/
+!Assets/**
+
+# Ignore DLLs copied manually except source references
+*.dll
+!libs/*.dll
+
+# Ignore pdb/debug symbols
+*.pdb
+
+# Ignore packaged zips
+*.zip
