@@ -7,6 +7,8 @@ namespace DwarvenStorage;
 
 public class StorageInterface : MonoBehaviour, Interactable
 {
+    public static StorageInterface Instance { get; private set; }
+    
     private const int DefaultRows = 8;
     private const int DefaultColumns = 4;
     private const int UpgradeSlotCount = 6;
@@ -24,10 +26,14 @@ public class StorageInterface : MonoBehaviour, Interactable
     ];
 
     private string _currentStationName = "workbench";
+    
+    public string CurrentStationName => _currentStationName;
 
     private GameObject _panel;
     private Container _container;
     private CraftingStation _craftingStation;
+    public CraftingStation CraftingStation => _craftingStation;
+    
     private StorageUpgradeSlots _upgradeSlots;
 
     private readonly List<UpgradeSlotUI> _upgradeSlotUis = [];
@@ -55,6 +61,8 @@ public class StorageInterface : MonoBehaviour, Interactable
         if (hold) return false;
 
         SetCraftingStation(_currentStationName);
+        
+        Instance = this;
 
         InventoryGui.instance.Show(_container, 1);
         TogglePanel();
@@ -105,13 +113,20 @@ public class StorageInterface : MonoBehaviour, Interactable
     private void CreatePanel()
     {
         _panel = GUIManager.Instance.CreateWoodpanel(
-            parent: GUIManager.CustomGUIFront.transform,
+            parent: InventoryGui.instance.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
             position: Vector2.zero,
             width: 700,
             height: 900,
             draggable: true
+        );
+
+        var craftingTransform = InventoryGui.instance.m_container.transform;
+
+        _panel.transform.SetParent(craftingTransform.parent, false);
+        _panel.transform.SetSiblingIndex(
+            Mathf.Max(0, craftingTransform.GetSiblingIndex() - 1)
         );
 
         CreateTitle();
@@ -330,6 +345,8 @@ public class StorageInterface : MonoBehaviour, Interactable
     {
         if (Player.m_localPlayer == null) return;
         if (InventoryGui.instance == null) return;
+        
+        Instance = null;
 
         Player.m_localPlayer.SetCraftingStation(null);
         InventoryGui.instance.SetupCrafting();

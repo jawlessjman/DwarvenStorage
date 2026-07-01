@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace DwarvenStorage;
@@ -28,12 +27,11 @@ public class StorageUpgradeSlots : MonoBehaviour
         return _inventory;
     }
 
-    public bool CanAcceptItem(ItemDrop.ItemData item)
+    public static bool CanAcceptItem(ItemDrop.ItemData item)
     {
         if (item == null) return false;
 
-        return item.m_dropPrefab != null &&
-               item.m_dropPrefab.name.StartsWith("DwarvenUpgrade_");
+        return item.m_dropPrefab != null && item.m_customData.ContainsKey("DwarvenUpgrade");
     }
 
     public void InvokeChanged()
@@ -50,7 +48,7 @@ public class StorageUpgradeSlots : MonoBehaviour
         if (!added) return false;
 
         Save();
-        OnUpgradesChanged?.Invoke();
+        InvokeChanged();
 
         return true;
     }
@@ -64,7 +62,7 @@ public class StorageUpgradeSlots : MonoBehaviour
         if (!removed) return false;
 
         Save();
-        OnUpgradesChanged?.Invoke();
+        InvokeChanged();
 
         return true;
     }
