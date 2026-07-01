@@ -8,6 +8,7 @@ public class StorageUpgrade
     public string Name; 
     public string Description;
     public string CraftingStation;
+    public string StationKey;
     public List<ItemRequirements> ItemRequirements;
 }
 

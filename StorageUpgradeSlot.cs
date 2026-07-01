@@ -31,7 +31,28 @@ public class StorageUpgradeSlots : MonoBehaviour
     {
         if (item == null) return false;
 
-        return item.m_dropPrefab != null && item.m_customData.ContainsKey("DwarvenUpgrade");
+        Plugin.Logger.LogInfo($"item: {item.m_shared.m_name}");
+
+        foreach (var data in item.m_customData)
+        {
+            Plugin.Logger.LogInfo($"data: {data.Key} - {data.Value}");
+        }
+
+        if (item.m_customData.ContainsKey("DwarvenUpgrade"))
+        {
+            return true;
+        }
+
+        if (item.m_dropPrefab == null)
+        {
+            return false;
+        }
+
+        var prefabName = item.m_dropPrefab.name.Replace("(Clone)", "");
+
+        Plugin.Logger.LogInfo($"prefabName: {prefabName}");
+
+        return Plugin.UpgradeStationsByPrefabName.ContainsKey(prefabName);
     }
 
     public void InvokeChanged()

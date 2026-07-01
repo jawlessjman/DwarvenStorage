@@ -17,6 +17,8 @@ public class Plugin : BaseUnityPlugin
     public const string ModGuid = "jawlessjman.DwarvenStorage";
     public const string ModName = "Dwarven Storage";
     public const string ModVersion = "1.0.0";
+
+    public static Dictionary<string, string> UpgradeStationsByPrefabName = new();
     
     public static List<string> UpgradeItemNames = [
         "Workbench_Upgrade",
@@ -26,10 +28,25 @@ public class Plugin : BaseUnityPlugin
         "Cauldron_Upgrade",
         "ArtisanTable_Upgrade"
     ];
-    
-    public static List<StorageUpgrade> StorageUpgrades = [
+
+    private static readonly List<StorageUpgrade> StorageUpgrades = [
         new StorageUpgrade() {Name="Workbench_Upgrade", CraftingStation = CraftingStations.Workbench, ItemRequirements =
-            [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your workbench to hold more items."
+            [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your workbench to hold more items.", StationKey = "workbench"
+        },
+        new StorageUpgrade() {Name="Forge_Upgrade", CraftingStation = CraftingStations.Forge, ItemRequirements =
+                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your forge to hold more items.", StationKey = "workbench"
+        },
+        new StorageUpgrade() {Name="Blackforge_Upgrade", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
+                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your black forge to hold more items.", StationKey = "workbench"
+        },
+        new StorageUpgrade() {Name="GaldrTable_Upgrade", CraftingStation = CraftingStations.GaldrTable, ItemRequirements =
+                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your Galdr table to hold more items.", StationKey = "workbench"
+        },
+        new StorageUpgrade() {Name="ArtisanTable_Upgrade", CraftingStation = CraftingStations.ArtisanTable, ItemRequirements =
+                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your Artisan to hold more items.", StationKey = "workbench"
+        },
+        new StorageUpgrade() {Name="Cauldron_Upgrade", CraftingStation = CraftingStations.Cauldron, ItemRequirements =
+                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your cauldron to hold more items.", StationKey = "workbench"
         },
     ];
     
@@ -40,30 +57,17 @@ public class Plugin : BaseUnityPlugin
         // Plugin startup logic
         Logger = base.Logger;
         
+        // Harmony Patches
         _harmony = new Harmony(ModGuid);
         _harmony.PatchAll();
-
+        
+        // Create Prefabs
         PrefabManager.OnVanillaPrefabsAvailable += CreateTestInterface;
         PrefabManager.OnVanillaPrefabsAvailable += CreateUpgradeItems;
         
         Logger.LogInfo($"Plugin {ModName}-{ModVersion} is loaded!");
     }
-
-    private void Test()
-    {
-        var panel = GUIManager.Instance.CreateWoodpanel(
-            parent: Hud.instance.transform,
-            anchorMin: new Vector2(0.5f, 0.5f),
-            anchorMax: new Vector2(0.5f, 0.5f),
-            position: Vector2.zero,
-            width: 700,
-            height: 900,
-            draggable: true
-        );
-        
-        panel.SetActive(true);
-    }
-
+    
     private static void CreateTestInterface()
     {
         var workbench = new PieceConfig
@@ -105,7 +109,9 @@ public class Plugin : BaseUnityPlugin
             }
             
             var customItem = new CustomItem(item.Name, "AskHide", itemConfig);
-            customItem.ItemDrop.m_itemData.m_customData.Add("DwarvenUpgrade", item.CraftingStation);
+            
+            customItem.ItemDrop.m_itemData.m_customData["DwarvenUpgrade"] = item.CraftingStation;
+            UpgradeStationsByPrefabName[item.Name] = item.StationKey;
             ItemManager.Instance.AddItem(customItem);
         }
         

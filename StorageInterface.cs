@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Jotunn.Managers;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,12 +10,12 @@ namespace DwarvenStorage;
 public class StorageInterface : MonoBehaviour, Interactable
 {
     public static StorageInterface Instance { get; private set; }
-    
+
     private const int DefaultRows = 8;
-    private const int DefaultColumns = 4;
+    private const int DefaultColumns = 10;
     private const int UpgradeSlotCount = 6;
 
-    private static readonly List<string> StationNames =
+    private static readonly string[] StationNames =
     [
         "workbench",
         "forge",
@@ -25,25 +27,54 @@ public class StorageInterface : MonoBehaviour, Interactable
         "preptable"
     ];
 
-    private string _currentStationName = "workbench";
-    
+    private readonly Dictionary<string, int> _stationLevels = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["workbench"] = 0,
+        ["forge"] = 0,
+        ["blackforge"] = 0,
+        ["cauldron"] = 0,
+        ["stonecutter"] = 0,
+        ["artisan"] = 0,
+        ["galdr"] = 0,
+        ["preptable"] = 0,
+    };
+
+    private readonly List<UpgradeSlotUI> _upgradeSlotUis = new();
+    private readonly List<string> _currentDropdownOptions = new();
+
+    private string _currentStationName = "None";
+
     public string CurrentStationName => _currentStationName;
+    public int CurrentStationLevel => GetStationLevel(_currentStationName);
+    public CraftingStation CraftingStation => _craftingStation;
 
     private GameObject _panel;
+    private GameObject _stationDropdown;
+
     private Container _container;
     private CraftingStation _craftingStation;
-    public CraftingStation CraftingStation => _craftingStation;
-    
     private StorageUpgradeSlots _upgradeSlots;
 
-    private readonly List<UpgradeSlotUI> _upgradeSlotUis = [];
+    private bool _suppressDropdownCallback;
+
+    private Dropdown StationDropdownObject => _stationDropdown != null
+        ? _stationDropdown.GetComponent<Dropdown>()
+        : null;
 
     private void Awake()
     {
         _container = gameObject.AddComponent<Container>();
         _container.m_name = "Storage Interface";
+        _container.name = "Storage Interface";
         _container.m_width = DefaultColumns;
         _container.m_height = DefaultRows;
+
+        if (_container.m_inventory != null)
+        {
+            _container.m_inventory.m_name = "Storage Interface";
+            _container.m_inventory.m_width = DefaultColumns;
+            _container.m_inventory.m_height = DefaultRows;
+        }
 
         _craftingStation = gameObject.AddComponent<CraftingStation>();
         _craftingStation.m_name = "$piece_workbench";
@@ -54,18 +85,44 @@ public class StorageInterface : MonoBehaviour, Interactable
         _craftingStation.m_craftRequireRoof = false;
 
         _upgradeSlots = GetComponent<StorageUpgradeSlots>();
+
+        if (_upgradeSlots != null)
+        {
+            _upgradeSlots.OnUpgradesChanged += OnUpgradesChanged;
+            RebuildStationUpgrades();
+            EnsureValidCurrentStation();
+        }
+        else
+        {
+            Plugin.Logger.LogWarning("StorageInterface is missing StorageUpgradeSlots.");
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (_upgradeSlots != null)
+        {
+            _upgradeSlots.OnUpgradesChanged -= OnUpgradesChanged;
+        }
+
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 
     public bool Interact(Humanoid user, bool hold, bool alt)
     {
         if (hold) return false;
 
-        SetCraftingStation(_currentStationName);
-        
-        Instance = this;
-
-        InventoryGui.instance.Show(_container, 1);
-        TogglePanel();
+        if (Instance == this && _panel != null && _panel.activeSelf)
+        {
+            CloseInterface();
+        }
+        else
+        {
+            OpenInterface();
+        }
 
         return true;
     }
@@ -78,17 +135,20 @@ public class StorageInterface : MonoBehaviour, Interactable
     private void FixedUpdate()
     {
         if (_panel == null || !_panel.activeSelf) return;
+        if (InventoryGui.instance != null && InventoryGui.instance.IsContainerOpen()) return;
 
-        if (InventoryGui.instance.IsContainerOpen()) return;
-
-        _panel.SetActive(false);
-        ResetPlayerCrafting();
+        CloseInterface();
     }
 
-    private void TogglePanel()
+    private void OpenInterface()
     {
         if (GUIManager.Instance == null) return;
-        if (GUIManager.CustomGUIFront == null) return;
+        if (InventoryGui.instance == null) return;
+
+        Instance = this;
+
+        RebuildStationUpgrades();
+        EnsureValidCurrentStation();
 
         if (_panel == null)
         {
@@ -96,18 +156,111 @@ public class StorageInterface : MonoBehaviour, Interactable
             _panel.SetActive(false);
         }
 
-        var state = !_panel.activeSelf;
-        _panel.SetActive(state);
+        RefreshStationDropdown();
+        RefreshUpgradeSlots();
 
-        if (state)
+        InventoryGui.instance.Show(_container, 1);
+
+        _panel.SetActive(true);
+
+        ApplyCurrentCraftingStation();
+    }
+
+    private void CloseInterface()
+    {
+        if (_panel != null)
         {
-            RefreshUpgradeSlots();
+            _panel.SetActive(false);
         }
-        else
+
+        if (InventoryGui.instance != null)
         {
             InventoryGui.instance.Hide();
-            ResetPlayerCrafting();
         }
+
+        ResetPlayerCrafting();
+    }
+
+    private void OnUpgradesChanged()
+    {
+        RebuildStationUpgrades();
+        EnsureValidCurrentStation();
+
+        RefreshStationDropdown();
+        RefreshUpgradeSlots();
+
+        if (Instance == this)
+        {
+            ApplyCurrentCraftingStation();
+        }
+    }
+
+    private void RebuildStationUpgrades()
+    {
+        foreach (var station in StationNames)
+        {
+            _stationLevels[station] = 0;
+        }
+
+        if (_upgradeSlots == null) return;
+
+        var inventory = _upgradeSlots.GetInventory();
+        if (inventory == null) return;
+
+        foreach (var item in inventory.m_inventory)
+        {
+            if (!TryGetStationFromUpgradeItem(item, out var stationName)) continue;
+            if (!_stationLevels.ContainsKey(stationName)) continue;
+
+            var level = Mathf.Max(1, item.m_quality);
+            _stationLevels[stationName] = Mathf.Max(_stationLevels[stationName], level);
+        }
+    }
+
+    private void EnsureValidCurrentStation()
+    {
+        if (HasStationUpgrade(_currentStationName)) return;
+
+        _currentStationName = GetUnlockedStations().FirstOrDefault() ?? "None";
+    }
+
+    private IEnumerable<string> GetUnlockedStations()
+    {
+        return StationNames.Where(HasStationUpgrade);
+    }
+
+    public bool HasStationUpgrade(string stationName)
+    {
+        return !string.IsNullOrEmpty(stationName)
+               && _stationLevels.TryGetValue(stationName, out var level)
+               && level > 0;
+    }
+
+    public int GetStationLevel(string stationName)
+    {
+        return !string.IsNullOrEmpty(stationName)
+               && _stationLevels.TryGetValue(stationName, out var level)
+            ? level
+            : 0;
+    }
+
+    private static bool TryGetStationFromUpgradeItem(ItemDrop.ItemData item, out string stationName)
+    {
+        stationName = null;
+
+        if (item == null) return false;
+
+        if (item.m_customData.TryGetValue("DwarvenUpgrade", out stationName))
+        {
+            return !string.IsNullOrEmpty(stationName);
+        }
+
+        if (item.m_dropPrefab == null) return false;
+
+        var prefabName = item.m_dropPrefab.name.Replace("(Clone)", "");
+
+        return Plugin.UpgradeStationsByPrefabName.TryGetValue(prefabName, out stationName)
+               && !string.IsNullOrEmpty(stationName);
     }
 
     private void CreatePanel()
@@ -122,11 +275,11 @@ public class StorageInterface : MonoBehaviour, Interactable
             draggable: true
         );
 
-        var craftingTransform = InventoryGui.instance.m_container.transform;
+        var containerTransform = InventoryGui.instance.m_container.transform;
 
-        _panel.transform.SetParent(craftingTransform.parent, false);
+        _panel.transform.SetParent(containerTransform.parent, false);
         _panel.transform.SetSiblingIndex(
-            Mathf.Max(0, craftingTransform.GetSiblingIndex() - 1)
+            Mathf.Max(0, containerTransform.GetSiblingIndex() - 1)
         );
 
         CreateTitle();
@@ -134,7 +287,7 @@ public class StorageInterface : MonoBehaviour, Interactable
         CreateStationDropdown();
         CreateCloseButton();
     }
-    
+
     private void CreateTitle()
     {
         GUIManager.Instance.CreateText(
@@ -176,7 +329,10 @@ public class StorageInterface : MonoBehaviour, Interactable
             );
 
             var button = slotObject.GetComponent<Button>();
-            button.onClick.AddListener(() => OnUpgradeSlotClicked(index));
+            if (button != null)
+            {
+                button.onClick.AddListener(() => OnUpgradeSlotClicked(index));
+            }
 
             var iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
             iconObject.transform.SetParent(slotObject.transform, false);
@@ -205,15 +361,17 @@ public class StorageInterface : MonoBehaviour, Interactable
         if (_upgradeSlots == null) return;
 
         var inventory = _upgradeSlots.GetInventory();
-        var dragItem = InventoryGui.instance.m_dragItem;
+        if (inventory == null) return;
+
+        var dragItem = InventoryGui.instance?.m_dragItem;
 
         if (dragItem != null)
         {
-            // if (!_upgradeSlots.CanAcceptItem(dragItem))
-            // {
-            //     Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Invalid upgrade item");
-            //     return;
-            // }
+            if (!TryGetStationFromUpgradeItem(dragItem, out var stationName))
+            {
+                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Invalid upgrade item");
+                return;
+            }
 
             var existing = inventory.GetItemAt(0, index);
             if (existing != null)
@@ -225,6 +383,7 @@ public class StorageInterface : MonoBehaviour, Interactable
             var clone = dragItem.Clone();
             clone.m_stack = 1;
             clone.m_gridPos = new Vector2i(0, index);
+            clone.m_customData["DwarvenUpgrade"] = stationName;
 
             inventory.AddItem(clone);
 
@@ -255,6 +414,7 @@ public class StorageInterface : MonoBehaviour, Interactable
         if (_upgradeSlots == null) return;
 
         var inventory = _upgradeSlots.GetInventory();
+        if (inventory == null) return;
 
         for (var i = 0; i < _upgradeSlotUis.Count; i++)
         {
@@ -275,7 +435,7 @@ public class StorageInterface : MonoBehaviour, Interactable
 
     private void CreateStationDropdown()
     {
-        var dropdownObject = GUIManager.Instance.CreateDropDown(
+        _stationDropdown = GUIManager.Instance.CreateDropDown(
             parent: _panel.transform,
             anchorMin: new Vector2(1f, 1f),
             anchorMax: new Vector2(1f, 1f),
@@ -285,14 +445,39 @@ public class StorageInterface : MonoBehaviour, Interactable
             height: 35f
         );
 
-        var dropdown = dropdownObject.GetComponent<Dropdown>();
+        var dropdown = StationDropdownObject;
         if (dropdown == null) return;
 
-        dropdown.ClearOptions();
-        dropdown.AddOptions(StationNames);
-        dropdown.value = StationNames.IndexOf(_currentStationName);
-        dropdown.RefreshShownValue();
+        RefreshStationDropdown();
         dropdown.onValueChanged.AddListener(OnDropdownValueChanged);
+    }
+
+    private void RefreshStationDropdown()
+    {
+        var dropdown = StationDropdownObject;
+        if (dropdown == null) return;
+
+        _currentDropdownOptions.Clear();
+        _currentDropdownOptions.AddRange(GetUnlockedStations());
+
+        if (_currentDropdownOptions.Count == 0)
+        {
+            _currentDropdownOptions.Add("None");
+        }
+
+        if (!_currentDropdownOptions.Contains(_currentStationName))
+        {
+            _currentStationName = _currentDropdownOptions[0];
+        }
+
+        _suppressDropdownCallback = true;
+
+        dropdown.ClearOptions();
+        dropdown.AddOptions(_currentDropdownOptions);
+        dropdown.value = Mathf.Max(0, _currentDropdownOptions.IndexOf(_currentStationName));
+        dropdown.RefreshShownValue();
+
+        _suppressDropdownCallback = false;
     }
 
     private void CreateCloseButton()
@@ -310,19 +495,47 @@ public class StorageInterface : MonoBehaviour, Interactable
         var button = buttonObject.GetComponent<Button>();
         if (button != null)
         {
-            button.onClick.AddListener(TogglePanel);
+            button.onClick.AddListener(CloseInterface);
         }
     }
 
     private void OnDropdownValueChanged(int index)
     {
-        if (index < 0 || index >= StationNames.Count) return;
+        if (_suppressDropdownCallback) return;
+        if (index < 0 || index >= _currentDropdownOptions.Count) return;
 
-        SetCraftingStation(StationNames[index]);
+        SetCraftingStation(_currentDropdownOptions[index]);
+    }
+
+    private void ApplyCurrentCraftingStation()
+    {
+        if (_currentStationName == "None")
+        {
+            ClearPlayerCraftingStation();
+            return;
+        }
+
+        SetCraftingStation(_currentStationName);
     }
 
     private void SetCraftingStation(string stationName)
     {
+        if (string.IsNullOrEmpty(stationName) || stationName == "None")
+        {
+            _currentStationName = "None";
+            ClearPlayerCraftingStation();
+            return;
+        }
+
+        if (!HasStationUpgrade(stationName))
+        {
+            Player.m_localPlayer?.Message(MessageHud.MessageType.Center, "Missing station upgrade");
+            EnsureValidCurrentStation();
+            RefreshStationDropdown();
+            ApplyCurrentCraftingStation();
+            return;
+        }
+
         _craftingStation.m_name = stationName switch
         {
             "forge" => "$piece_forge",
@@ -335,21 +548,22 @@ public class StorageInterface : MonoBehaviour, Interactable
             _ => "$piece_workbench"
         };
 
-        Player.m_localPlayer.SetCraftingStation(_craftingStation);
-        InventoryGui.instance.SetupCrafting();
-
         _currentStationName = stationName;
+
+        Player.m_localPlayer?.SetCraftingStation(_craftingStation);
+        InventoryGui.instance?.SetupCrafting();
+    }
+
+    private static void ClearPlayerCraftingStation()
+    {
+        Player.m_localPlayer?.SetCraftingStation(null);
+        InventoryGui.instance?.SetupCrafting();
     }
 
     private static void ResetPlayerCrafting()
     {
-        if (Player.m_localPlayer == null) return;
-        if (InventoryGui.instance == null) return;
-        
         Instance = null;
-
-        Player.m_localPlayer.SetCraftingStation(null);
-        InventoryGui.instance.SetupCrafting();
+        ClearPlayerCraftingStation();
     }
 
     private class UpgradeSlotUI

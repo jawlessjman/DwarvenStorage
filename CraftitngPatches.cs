@@ -30,6 +30,6 @@ public class CraftingPatches
 
         if (__instance != storage.CraftingStation) return;
 
-        __result = 1;
+        __result = StorageInterface.Instance.CurrentStationLevel;
     }
 }
