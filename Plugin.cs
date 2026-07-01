@@ -5,54 +5,44 @@ using HarmonyLib;
 using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
-using UnityEngine;
 
 namespace DwarvenStorage;
 
 [BepInPlugin(ModGuid, ModName, ModVersion)]
 public class Plugin : BaseUnityPlugin
 {
-    internal static new ManualLogSource Logger;
+    internal new static ManualLogSource Logger;
 
     public const string ModGuid = "jawlessjman.DwarvenStorage";
     public const string ModName = "Dwarven Storage";
     public const string ModVersion = "1.0.0";
 
-    public static Dictionary<string, string> UpgradeStationsByPrefabName = new();
-    
-    public static List<string> UpgradeItemNames = [
-        "Workbench_Upgrade",
-        "Forge_Upgrade",
-        "BlackForge_Upgrade",
-        "GaldrTable_Upgrade",
-        "Cauldron_Upgrade",
-        "ArtisanTable_Upgrade"
-    ];
+    public static readonly Dictionary<string, string> UpgradeStationsByPrefabName = new();
 
     private static readonly List<StorageUpgrade> StorageUpgrades = [
-        new StorageUpgrade() {Name="Workbench_Upgrade", CraftingStation = CraftingStations.Workbench, ItemRequirements =
-            [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your workbench to hold more items.", StationKey = "workbench", CanBeUpgraded = true
+        new() {Name="Workbench_Upgrade", CraftingStation = CraftingStations.Workbench, ItemRequirements =
+            [new ItemRequirements { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your workbench to hold more items.", StationKey = "workbench", MaxQualityLevel = 5
         },
-        new StorageUpgrade() {Name="Forge_Upgrade", CraftingStation = CraftingStations.Forge, ItemRequirements =
-                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your forge to hold more items.", StationKey = "forge", CanBeUpgraded = true
+        new() {Name="Forge_Upgrade", CraftingStation = CraftingStations.Forge, ItemRequirements =
+                [new ItemRequirements { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your forge to hold more items.", StationKey = "forge", MaxQualityLevel = 7
         },
-        new StorageUpgrade() {Name="Blackforge_Upgrade", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
-                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your black forge to hold more items.", StationKey = "blackforge", CanBeUpgraded = true
+        new() {Name="Blackforge_Upgrade", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
+                [new ItemRequirements { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your black forge to hold more items.", StationKey = "blackforge", MaxQualityLevel = 5
         },
-        new StorageUpgrade() {Name="GaldrTable_Upgrade", CraftingStation = CraftingStations.GaldrTable, ItemRequirements =
-                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your Galdr table to hold more items.", StationKey = "galdr", CanBeUpgraded = true
+        new() {Name="GaldrTable_Upgrade", CraftingStation = CraftingStations.GaldrTable, ItemRequirements =
+                [new ItemRequirements { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your Galdr table to hold more items.", StationKey = "galdr", MaxQualityLevel = 4
         },
-        new StorageUpgrade() {Name="ArtisanTable_Upgrade", CraftingStation = CraftingStations.ArtisanTable, ItemRequirements =
-                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your Artisan to hold more items.", StationKey = "artisan", CanBeUpgraded = true
+        new() {Name="ArtisanTable_Upgrade", CraftingStation = CraftingStations.ArtisanTable, ItemRequirements =
+                [new ItemRequirements { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your Artisan to hold more items.", StationKey = "artisan", MaxQualityLevel = 2
         },
-        new StorageUpgrade() {Name="Cauldron_Upgrade", CraftingStation = CraftingStations.Cauldron, ItemRequirements =
-                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your cauldron to hold more items.", StationKey = "cauldron", CanBeUpgraded = true
+        new() {Name="Cauldron_Upgrade", CraftingStation = CraftingStations.Cauldron, ItemRequirements =
+                [new ItemRequirements { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your cauldron to hold more items.", StationKey = "cauldron", MaxQualityLevel = 6
         },
-        new StorageUpgrade() {Name="StoneCutter_Upgrade", CraftingStation = CraftingStations.Stonecutter, ItemRequirements =
-                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 0 }], Description = "Upgrade your stonecutter to hold more items.", StationKey = "stonecutter", CanBeUpgraded = false
+        new() {Name="StoneCutter_Upgrade", CraftingStation = CraftingStations.Stonecutter, ItemRequirements =
+                [new ItemRequirements { Name = "Wood", Amount = 1, UpgradeAmount = 0 }], Description = "Upgrade your stonecutter to hold more items.", StationKey = "stonecutter", MaxQualityLevel = 1
         },
-        new StorageUpgrade() {Name="PrepTable_Upgrade", CraftingStation = CraftingStations.FoodPreparationTable, ItemRequirements =
-                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 0 }], Description = "Upgrade your prep table to hold more items.", StationKey = "preptable", CanBeUpgraded = false
+        new() {Name="PrepTable_Upgrade", CraftingStation = CraftingStations.FoodPreparationTable, ItemRequirements =
+                [new ItemRequirements { Name = "Wood", Amount = 1, UpgradeAmount = 0 }], Description = "Upgrade your prep table to hold more items.", StationKey = "preptable", MaxQualityLevel = 1
         },
     ];
     
@@ -115,6 +105,9 @@ public class Plugin : BaseUnityPlugin
             }
             
             var customItem = new CustomItem(item.Name, "AskHide", itemConfig);
+            
+            customItem.ItemDrop.m_itemData.m_shared.m_maxQuality = item.MaxQualityLevel;
+            customItem.ItemDrop.m_itemData.m_quality = 1;
             
             customItem.ItemDrop.m_itemData.m_customData["DwarvenUpgrade"] = item.CraftingStation;
             UpgradeStationsByPrefabName[item.Name] = item.StationKey;
