@@ -31,22 +31,28 @@ public class Plugin : BaseUnityPlugin
 
     private static readonly List<StorageUpgrade> StorageUpgrades = [
         new StorageUpgrade() {Name="Workbench_Upgrade", CraftingStation = CraftingStations.Workbench, ItemRequirements =
-            [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your workbench to hold more items.", StationKey = "workbench"
+            [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your workbench to hold more items.", StationKey = "workbench", CanBeUpgraded = true
         },
         new StorageUpgrade() {Name="Forge_Upgrade", CraftingStation = CraftingStations.Forge, ItemRequirements =
-                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your forge to hold more items.", StationKey = "workbench"
+                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your forge to hold more items.", StationKey = "forge", CanBeUpgraded = true
         },
         new StorageUpgrade() {Name="Blackforge_Upgrade", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
-                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your black forge to hold more items.", StationKey = "workbench"
+                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your black forge to hold more items.", StationKey = "blackforge", CanBeUpgraded = true
         },
         new StorageUpgrade() {Name="GaldrTable_Upgrade", CraftingStation = CraftingStations.GaldrTable, ItemRequirements =
-                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your Galdr table to hold more items.", StationKey = "workbench"
+                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your Galdr table to hold more items.", StationKey = "galdr", CanBeUpgraded = true
         },
         new StorageUpgrade() {Name="ArtisanTable_Upgrade", CraftingStation = CraftingStations.ArtisanTable, ItemRequirements =
-                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your Artisan to hold more items.", StationKey = "workbench"
+                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your Artisan to hold more items.", StationKey = "artisan", CanBeUpgraded = true
         },
         new StorageUpgrade() {Name="Cauldron_Upgrade", CraftingStation = CraftingStations.Cauldron, ItemRequirements =
-                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your cauldron to hold more items.", StationKey = "workbench"
+                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 2 }], Description = "Upgrade your cauldron to hold more items.", StationKey = "cauldron", CanBeUpgraded = true
+        },
+        new StorageUpgrade() {Name="StoneCutter_Upgrade", CraftingStation = CraftingStations.Stonecutter, ItemRequirements =
+                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 0 }], Description = "Upgrade your stonecutter to hold more items.", StationKey = "stonecutter", CanBeUpgraded = false
+        },
+        new StorageUpgrade() {Name="PrepTable_Upgrade", CraftingStation = CraftingStations.FoodPreparationTable, ItemRequirements =
+                [new ItemRequirements() { Name = "Wood", Amount = 1, UpgradeAmount = 0 }], Description = "Upgrade your prep table to hold more items.", StationKey = "preptable", CanBeUpgraded = false
         },
     ];
     
