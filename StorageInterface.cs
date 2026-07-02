@@ -11,9 +11,21 @@ public class StorageInterface : MonoBehaviour, Interactable
 {
     public static StorageInterface Instance { get; private set; }
 
-    private const int DefaultRows = 8;
+    private const int DefaultRows = 5;
     private const int DefaultColumns = 10;
+    private const int MaxRows = 30;
+    private const int MaxColumns = 10;
     private const int UpgradeSlotCount = 6;
+    
+    private bool _hasBeenOpened;
+    
+    private ZNetView _zNetView;
+
+    private const float ExtensionScanInterval = 2f;
+    
+    private float _extensionScanTimer;
+    private int _currentRows = DefaultRows;
+    private int _currentColumns = DefaultColumns;
 
     private static readonly string[] StationNames =
     [
@@ -52,6 +64,8 @@ public class StorageInterface : MonoBehaviour, Interactable
     private GameObject _stationDropdown;
 
     private Container _container;
+    public Container Container => _container;
+    
     private CraftingStation _craftingStation;
     private StorageUpgradeSlots _upgradeSlots;
 
@@ -66,15 +80,17 @@ public class StorageInterface : MonoBehaviour, Interactable
         _container = gameObject.AddComponent<Container>();
         _container.m_name = "Storage Interface";
         _container.name = "Storage Interface";
-        _container.m_width = DefaultColumns;
-        _container.m_height = DefaultRows;
+        _container.m_width = MaxColumns;
+        _container.m_height = MaxRows;
 
         if (_container.m_inventory != null)
         {
             _container.m_inventory.m_name = "Storage Interface";
-            _container.m_inventory.m_width = DefaultColumns;
-            _container.m_inventory.m_height = DefaultRows;
+            _container.m_inventory.m_width = MaxColumns;
+            _container.m_inventory.m_height = MaxRows;
         }
+        
+        _zNetView = GetComponent<ZNetView>();
 
         _craftingStation = gameObject.AddComponent<CraftingStation>();
         _craftingStation.m_name = "$piece_workbench";
@@ -83,6 +99,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         _craftingStation.m_discoverRange = 30f;
         _craftingStation.m_useDistance = 30f;
         _craftingStation.m_craftRequireRoof = false;
+
+        _currentColumns = MaxColumns;
+        _currentRows = MaxRows;
 
         _upgradeSlots = GetComponent<StorageUpgradeSlots>();
 
@@ -111,6 +130,122 @@ public class StorageInterface : MonoBehaviour, Interactable
         }
     }
 
+    private void RebuildStorageSizeFromExtensions()
+    {
+        var targetRows = DefaultRows;
+        var targetColumns = DefaultColumns;
+
+        var extensions = FindObjectsByType<StorageInterfaceExtension>(FindObjectsSortMode.None);
+
+        foreach (var extension in extensions)
+        {
+            if (extension == null) continue;
+            if (!extension.IsInRange(this)) continue;
+
+            targetRows += extension.AddedRows;
+            targetColumns += extension.AddedColumns;
+        }
+        
+        targetRows = Mathf.Clamp(targetRows, DefaultRows, MaxRows);
+        targetColumns = Mathf.Clamp(targetColumns, DefaultColumns, MaxColumns);
+        
+        ResizeStorage(targetRows, targetColumns);
+    }
+
+    private void ResizeStorage(int rows, int columns)
+    {
+        if (_container == null || _container.m_inventory == null) return;
+        if (_currentColumns == columns && _currentRows == rows) return;
+        
+        var isShrinking = _currentColumns > columns || _currentRows > rows;
+
+        if (isShrinking)
+        {
+            var canDropOverflow = _zNetView == null || !_zNetView.IsValid() || _zNetView.IsOwner();
+
+            if (canDropOverflow)
+            {
+                DropItemsOutsideBounds(columns, rows);
+            }
+        }
+        
+        _currentRows = rows;
+        _currentColumns = columns;
+        
+        _container.m_width = columns;
+        _container.m_height = rows;
+        
+        _container.m_inventory.m_width = columns;
+        _container.m_inventory.m_height = rows;
+        
+        MarkStorageChanged();
+
+        if (InventoryGui.instance != null && InventoryGui.instance.IsContainerOpen())
+        {
+            InventoryGui.instance.SetupCrafting();
+        }
+        
+        Plugin.Logger.LogInfo($"Storage resized to {columns}x{rows}");
+    }
+
+    private void DropItemsOutsideBounds(int columns, int rows)
+    {
+        var inventory = _container.m_inventory;
+        if (inventory == null) return;
+        
+        var itemsToDrop = new List<ItemDrop.ItemData>();
+
+        foreach (var item in inventory.m_inventory)
+        {
+            if (item == null) continue;
+            
+            var x = item.m_gridPos.x;
+            var y = item.m_gridPos.y;
+
+            if (x >= columns || y >= rows)
+            {
+                itemsToDrop.Add(item);
+            }
+        }
+
+        foreach (var item in itemsToDrop)
+        {
+            inventory.RemoveItem(item);
+            
+            var dropPosition = transform.position + transform.forward * 1.5f + Vector3.up * 0.75f;
+            
+            ItemDrop.DropItem(item, item.m_stack, dropPosition, Quaternion.identity);
+            
+            Plugin.Logger.LogInfo($"Dropped item {item.m_shared.m_name} outside bounds");
+        }
+    }
+    
+    private void MarkStorageChanged()
+    {
+        if (_container == null) return;
+
+        try
+        {
+            var saveMethod = typeof(Container).GetMethod(
+                "Save",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+            );
+
+            saveMethod?.Invoke(_container, []);
+
+            var changedMethod = typeof(Inventory).GetMethod(
+                "Changed",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+            );
+
+            changedMethod?.Invoke(_container.m_inventory, []);
+        }
+        catch (Exception e)
+        {
+            Plugin.Logger.LogWarning($"Failed to mark storage changed: {e.Message}");
+        }
+    }
+
     public bool Interact(Humanoid user, bool hold, bool alt)
     {
         if (hold) return false;
@@ -132,6 +267,18 @@ public class StorageInterface : MonoBehaviour, Interactable
         return false;
     }
 
+    private void Update()
+    {
+        if (!_hasBeenOpened) return;
+        if (_panel == null || !_panel.activeSelf) return;
+        
+        _extensionScanTimer += Time.deltaTime;
+
+        if (!(_extensionScanTimer >= ExtensionScanInterval)) return;
+        _extensionScanTimer = 0f;
+        RebuildStorageSizeFromExtensions();
+    }
+
     private void FixedUpdate()
     {
         if (_panel == null || !_panel.activeSelf) return;
@@ -145,7 +292,11 @@ public class StorageInterface : MonoBehaviour, Interactable
         if (GUIManager.Instance == null) return;
         if (InventoryGui.instance == null) return;
 
+        _hasBeenOpened = true;
+
         Instance = this;
+        
+        RebuildStorageSizeFromExtensions();
 
         RebuildStationUpgrades();
         EnsureValidCurrentStation();
@@ -159,7 +310,7 @@ public class StorageInterface : MonoBehaviour, Interactable
         RefreshStationDropdown();
         RefreshUpgradeSlots();
 
-        InventoryGui.instance.Show(_container, 1);
+        InventoryGui.instance.Show(_container);
 
         _panel.SetActive(true);
 
@@ -211,8 +362,11 @@ public class StorageInterface : MonoBehaviour, Interactable
         {
             if (!TryGetStationFromUpgradeItem(item, out var stationName)) continue;
             if (!_stationLevels.ContainsKey(stationName)) continue;
+            if (item.m_dropPrefab == null) return;
 
-            var level = Mathf.Max(1, item.m_quality);
+            var prefabName = item.m_dropPrefab.name.Replace("(Clone)", "");
+
+            var level = Plugin.UpgradeAmountsByPrefabName[prefabName];
             _stationLevels[stationName] = Mathf.Max(_stationLevels[stationName], level);
         }
     }
@@ -229,14 +383,14 @@ public class StorageInterface : MonoBehaviour, Interactable
         return StationNames.Where(HasStationUpgrade);
     }
 
-    public bool HasStationUpgrade(string stationName)
+    private bool HasStationUpgrade(string stationName)
     {
         return !string.IsNullOrEmpty(stationName)
                && _stationLevels.TryGetValue(stationName, out var level)
                && level > 0;
     }
 
-    public int GetStationLevel(string stationName)
+    private int GetStationLevel(string stationName)
     {
         return !string.IsNullOrEmpty(stationName)
                && _stationLevels.TryGetValue(stationName, out var level)

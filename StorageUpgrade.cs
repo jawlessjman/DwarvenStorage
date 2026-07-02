@@ -10,7 +10,7 @@ public class StorageUpgrade
     public string CraftingStation;
     public string StationKey;
     public List<ItemRequirements> ItemRequirements;
-    public int MaxQualityLevel;
+    public int MinQualityLevel;
 }
 
 public class ItemRequirements()
