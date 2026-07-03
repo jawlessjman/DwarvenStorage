@@ -41,4 +41,8 @@
       <HintPath>D:\SteamLibrary\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Bundles\dwarvenstorage" />
+  </ItemGroup>
 </Project>

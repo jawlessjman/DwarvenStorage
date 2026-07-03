@@ -5,6 +5,7 @@ using HarmonyLib;
 using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
+using UnityEngine;
 
 namespace DwarvenStorage;
 
@@ -14,7 +15,7 @@ public class Plugin : BaseUnityPlugin
     internal new static ManualLogSource Logger;
 
     public const string ModGuid = "jawlessjman.DwarvenStorage";
-    public const string ModName = "Dwarven Storage";
+    public const string ModName = "DwarvenStorage";
     public const string ModVersion = "1.0.0";
 
     public static readonly Dictionary<string, string> UpgradeStationsByPrefabName = new();
@@ -373,16 +374,103 @@ public class Plugin : BaseUnityPlugin
         _harmony = new Harmony(ModGuid);
         _harmony.PatchAll();
         
+        // Load Assets
+        AssetHolder.LoadAssetBundle();
+        
         // Create Prefabs
         PrefabManager.OnVanillaPrefabsAvailable += CreateTestInterface;
+        PrefabManager.OnVanillaPrefabsAvailable += CreateCustomPiece;
         PrefabManager.OnVanillaPrefabsAvailable += CreateStorageExtensions;
         PrefabManager.OnVanillaPrefabsAvailable += CreateUpgradeItems;
+
+        if (AssetHolder.Bundle != null)
+        {
+            Logger.LogInfo($"Loaded {AssetHolder.Bundle.GetAllAssetNames().Length} assets!");
+        }
         
         Logger.LogInfo($"Plugin {ModName}-{ModVersion} is loaded!");
+    }
+
+    // private static void CreateCustomPiece()
+    // {
+    //     var config = new PieceConfig()
+    //     {
+    //         Name = "$Test_Interface",
+    //         Description = "Custom piece description",
+    //         PieceTable = PieceTables.Hammer,
+    //         CraftingStation = CraftingStations.Workbench,
+    //         Category = PieceCategories.Misc,
+    //     };
+    //     
+    //     config.AddRequirement("Wood", 1);
+    //
+    //     PieceManager.Instance.AddPiece(new CustomPiece(AssetHolder.Bundle, "dwarven_interface", true, config));
+    //     
+    //     PrefabManager.OnVanillaPrefabsAvailable -= CreateCustomPiece;
+    // }
+    
+    private static void CreateCustomPiece()
+    {
+        var config = new PieceConfig
+        {
+            Name = "$piece_dwarven_interface",
+            Description = "$piece_dwarven_interface_description",
+            PieceTable = PieceTables.Hammer,
+            CraftingStation = CraftingStations.Workbench,
+            Category = PieceCategories.Misc,
+        };
+
+        config.AddRequirement("Wood", 1);
+
+        var customPiece = new CustomPiece(
+            AssetHolder.Bundle,
+            "dwarven_interface",
+            true,
+            config
+        );
+
+        var prefab = customPiece.PiecePrefab;
+
+        prefab.name = "dwarven_interface";
+
+        var piece = prefab.GetComponent<Piece>();
+        if (piece == null)
+        {
+            Plugin.Logger.LogError("dwarven_interface is missing Piece component.");
+            return;
+        }
+
+        var zNetView = prefab.GetComponent<ZNetView>();
+        if (zNetView == null)
+        {
+            Plugin.Logger.LogError("dwarven_interface is missing ZNetView component.");
+            return;
+        }
+        
+        prefab.AddComponent<StorageInterface>();
+        prefab.AddComponent<StorageUpgradeSlots>();
+
+        zNetView.m_persistent = true;
+        zNetView.m_distant = false;
+        zNetView.m_type = ZDO.ObjectType.Solid;
+        zNetView.m_syncInitialScale = false;
+
+        var wearNTear = prefab.GetComponent<WearNTear>();
+        if (wearNTear == null)
+        {
+            Plugin.Logger.LogError("dwarven_interface is missing WearNTear component.");
+            return;
+        }
+
+        PieceManager.Instance.AddPiece(customPiece);
+
+        PrefabManager.OnVanillaPrefabsAvailable -= CreateCustomPiece;
     }
     
     private static void CreateTestInterface()
     {
+        AssetHolder.PrintAssetNames();
+        
         var workbench = new PieceConfig
         {
             Name = "Test Interface",

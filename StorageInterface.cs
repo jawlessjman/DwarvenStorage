@@ -13,7 +13,7 @@ public class StorageInterface : MonoBehaviour, Interactable
 
     private const int DefaultRows = 5;
     private const int DefaultColumns = 10;
-    private const int MaxRows = 30;
+    private const int MaxRows = 75;
     private const int MaxColumns = 10;
     private const int UpgradeSlotCount = 6;
     
