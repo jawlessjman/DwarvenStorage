@@ -43,9 +43,9 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Remove="Assets\Bundles\dwarvenstorage" />
-    <EmbeddedResource Include="Assets\Bundles\dwarvenstorage" />
     <None Remove="Assets\Translations\English\DwarvenStorage.json" />
     <EmbeddedResource Include="Assets\Translations\English\DwarvenStorage.json" />
+    <None Remove="Assets\Bundles\dwarvenstorage" />
+    <EmbeddedResource Include="Assets\Bundles\dwarvenstorage" />
   </ItemGroup>
 </Project>

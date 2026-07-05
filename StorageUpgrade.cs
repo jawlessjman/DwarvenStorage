@@ -11,6 +11,7 @@ public class StorageUpgrade
     public string StationKey;
     public List<ItemRequirements> ItemRequirements;
     public int MinQualityLevel;
+    public string SpriteName;
 }
 
 public class ItemRequirements()

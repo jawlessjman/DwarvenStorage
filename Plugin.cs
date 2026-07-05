@@ -85,6 +85,7 @@ public class Plugin : BaseUnityPlugin
             [
                 new ItemRequirements { Name = "Wood", Amount = 5, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Workbench_1",
             Description = "$workbench_upgrade_1_desc", StationKey = "workbench", MinQualityLevel = 1
         },
         new() {Name="$workbench_upgrade_2", CraftingStation = CraftingStations.Workbench, ItemRequirements =
@@ -93,6 +94,7 @@ public class Plugin : BaseUnityPlugin
                     new ItemRequirements { Name = "Wood", Amount = 5, UpgradeAmount = 0 },
                     new ItemRequirements { Name = "Flint", Amount = 5, UpgradeAmount = 0 }
                 ], 
+            SpriteName = "Workbench_2",
             Description = "$workbench_upgrade_2_desc", StationKey = "workbench", MinQualityLevel = 2
         },
         new() {Name="$workbench_upgrade_3", CraftingStation = CraftingStations.Workbench, ItemRequirements =
@@ -102,7 +104,8 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Flint", Amount = 7, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "LeatherScraps", Amount = 10, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "DeerHide", Amount = 2, UpgradeAmount = 0 }
-            ], 
+            ], SpriteName = "Workbench_3",
+            
             Description = "$workbench_upgrade_3_desc", StationKey = "workbench", MinQualityLevel = 3
         },
         new() {Name="$workbench_upgrade_4", CraftingStation = CraftingStations.Workbench, ItemRequirements =
@@ -111,6 +114,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "FineWood", Amount = 5, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Bronze", Amount = 1, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Workbench_4",
             Description = "$workbench_upgrade_4_desc", StationKey = "workbench", MinQualityLevel = 4
         },
         new() {Name="$workbench_upgrade_5", CraftingStation = CraftingStations.Workbench, ItemRequirements =
@@ -120,6 +124,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Iron", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Obsidian", Amount = 2, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Workbench_5",
             Description = "$workbench_upgrade_5_desc", StationKey = "workbench", MinQualityLevel = 5
         },
         
@@ -131,6 +136,7 @@ public class Plugin : BaseUnityPlugin
                     new ItemRequirements { Name = "Coal", Amount = 2, UpgradeAmount = 0 },
                     new ItemRequirements { Name = "Copper", Amount = 3, UpgradeAmount = 0 }
                 ], 
+            SpriteName = "Forge_1",
             Description = "$forge_upgrade_1_desc", StationKey = "forge", MinQualityLevel = 1
         },
         new() {Name="$forge_upgrade_2", CraftingStation = CraftingStations.Forge, ItemRequirements =
@@ -139,6 +145,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "FineWood", Amount = 12, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Copper", Amount = 5, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Forge_2",
             Description = "$forge_upgrade_2_desc", StationKey = "forge", MinQualityLevel = 2
         },
         new() {Name="$forge_upgrade_3", CraftingStation = CraftingStations.Forge, ItemRequirements =
@@ -147,6 +154,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Wood", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Bronze", Amount = 1, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Forge_3",
             Description = "$forge_upgrade_3_desc", StationKey = "forge", MinQualityLevel = 3
         },
         new() {Name="$forge_upgrade_4", CraftingStation = CraftingStations.Forge, ItemRequirements =
@@ -155,6 +163,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Wood", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Iron", Amount = 10, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Forge_4",
             Description = "$forge_upgrade_4_desc", StationKey = "forge", MinQualityLevel = 4
         },
         new() {Name="$forge_upgrade_5", CraftingStation = CraftingStations.Forge, ItemRequirements =
@@ -163,6 +172,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Wood", Amount = 5, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Iron", Amount = 7, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Forge_5",
             Description = "$forge_upgrade_5_desc", StationKey = "forge", MinQualityLevel = 5
         },
         new() {Name="$forge_upgrade_6", CraftingStation = CraftingStations.Forge, ItemRequirements =
@@ -172,6 +182,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "DeerHide", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Chain", Amount = 2, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Forge_6",
             Description = "$forge_upgrade_6_desc", StationKey = "forge", MinQualityLevel = 6
         },
         new() {Name="$forge_upgrade_7", CraftingStation = CraftingStations.Forge, ItemRequirements =
@@ -180,6 +191,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Wood", Amount = 12, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "SharpeningStone", Amount = 1, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Forge_7",
             Description = "$forge_upgrade_7_desc", StationKey = "forge", MinQualityLevel = 7
         },
         
@@ -188,6 +200,7 @@ public class Plugin : BaseUnityPlugin
                 [
                     new ItemRequirements { Name = "Tin", Amount = 5, UpgradeAmount = 0 }
                 ], 
+            SpriteName = "Cauldron_1",
             Description = "$cauldron_upgrade_1_desc", StationKey = "cauldron", MinQualityLevel = 1
         },
         new() {Name="$cauldron_upgrade_2", CraftingStation = CraftingStations.Cauldron, ItemRequirements =
@@ -199,6 +212,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Thistle", Amount = 3, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Turnip", Amount = 1, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Cauldron_2",
             Description = "$cauldron_upgrade_2_desc", StationKey = "cauldron", MinQualityLevel = 2
         },
         new() {Name="$cauldron_upgrade_3", CraftingStation = CraftingStations.Cauldron, ItemRequirements =
@@ -209,6 +223,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "ElderBark", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Silver", Amount = 1, UpgradeAmount = 0 },
             ], 
+            SpriteName = "Cauldron_3",
             Description = "$cauldron_upgrade_3_desc", StationKey = "cauldron", MinQualityLevel = 3
         },
         new() {Name="$cauldron_upgrade_4", CraftingStation = CraftingStations.Cauldron, ItemRequirements =
@@ -219,6 +234,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "BlackMetal", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "FineWood", Amount = 5, UpgradeAmount = 0 },
             ], 
+            SpriteName = "Cauldron_4",
             Description = "$cauldron_upgrade_4_desc", StationKey = "cauldron", MinQualityLevel = 4
         },
         new() {Name="$cauldron_upgrade_5", CraftingStation = CraftingStations.Cauldron, ItemRequirements =
@@ -228,6 +244,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "RoundLog", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "FineWood", Amount = 3, UpgradeAmount = 0 },
             ], 
+            SpriteName = "Cauldron_5",
             Description = "$cauldron_upgrade_5_desc", StationKey = "cauldron", MinQualityLevel = 5
         },
         new() {Name="$cauldron_upgrade_6", CraftingStation = CraftingStations.Cauldron, ItemRequirements =
@@ -237,6 +254,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "FlametalNew", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "FineWood", Amount = 3, UpgradeAmount = 0 },
             ], 
+            SpriteName = "Cauldron_6",
             Description = "$cauldron_upgrade_6_desc", StationKey = "cauldron", MinQualityLevel = 6
         },
         
@@ -247,6 +265,7 @@ public class Plugin : BaseUnityPlugin
                     new ItemRequirements { Name = "Iron", Amount = 1, UpgradeAmount = 0 },
                     new ItemRequirements { Name = "Stone", Amount = 2, UpgradeAmount = 0 }
                 ], 
+            SpriteName = "Stonecutter_1",
             Description = "$stonecutter_upgrade_desc", StationKey = "stonecutter", MinQualityLevel = 1
         },
         
@@ -256,6 +275,7 @@ public class Plugin : BaseUnityPlugin
                     new ItemRequirements { Name = "Wood", Amount = 5, UpgradeAmount = 0 },
                     new ItemRequirements { Name = "DragonTear", Amount = 1, UpgradeAmount = 0 },
                 ], 
+            SpriteName = "Artisan_1",
             Description = "$artisan_table_upgrade_1_desc", StationKey = "artisan", MinQualityLevel = 1
         },
         new() {Name="$artisan_table_upgrade_2", CraftingStation = CraftingStations.ArtisanTable, ItemRequirements =
@@ -265,6 +285,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Bronze", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "QueenDrop", Amount = 1, UpgradeAmount = 0 },
             ], 
+            SpriteName = "Artisan_2",
             Description = "$artisan_table_upgrade_2_desc", StationKey = "artisan", MinQualityLevel = 2
         },
         
@@ -275,6 +296,7 @@ public class Plugin : BaseUnityPlugin
                     new ItemRequirements { Name = "Iron", Amount = 2, UpgradeAmount = 0 },
                     new ItemRequirements { Name = "LeatherScraps", Amount = 7, UpgradeAmount = 0 }
                 ], 
+            SpriteName = "Prep_Table_1",
             Description = "$prep_table_upgrade_desc", StationKey = "preptable", MinQualityLevel = 1
         },
         
@@ -285,6 +307,7 @@ public class Plugin : BaseUnityPlugin
                     new ItemRequirements { Name = "YggdrasilWood", Amount = 5, UpgradeAmount = 0 },
                     new ItemRequirements { Name = "BlackCore", Amount = 2, UpgradeAmount = 0 },
                 ], 
+            SpriteName = "Black_Forge_1",
             Description = "$blackforge_upgrade_1_desc", StationKey = "blackforge", MinQualityLevel = 1
         },
         new() {Name="$blackforge_upgrade_2", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
@@ -294,6 +317,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Copper", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "BlackMarble", Amount = 2, UpgradeAmount = 0 },
             ], 
+            SpriteName = "Black_Forge_2",
             Description = "$blackforge_upgrade_2_desc", StationKey = "blackforge", MinQualityLevel = 2
         },
         new() {Name="$blackforge_upgrade_3", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
@@ -303,6 +327,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Copper", Amount = 4, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "MechanicalSpring", Amount = 1, UpgradeAmount = 0 },
             ], 
+            SpriteName = "Black_Forge_3",
             Description = "$blackforge_upgrade_3_desc", StationKey = "blackforge", MinQualityLevel = 3
         },
         new() {Name="$blackforge_upgrade_4", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
@@ -313,6 +338,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Blackwood", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "CharredBone", Amount = 2, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Black_Forge_4",
             Description = "$blackforge_upgrade_4_desc", StationKey = "blackforge", MinQualityLevel = 4
         },
         new() {Name="$blackforge_upgrade_5", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
@@ -323,6 +349,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Blackwood", Amount = 4, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "MorgenSinew", Amount = 1, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Black_Forge_5",
             Description = "$blackforge_upgrade_5_desc", StationKey = "blackforge", MinQualityLevel = 5
         },
         
@@ -334,6 +361,7 @@ public class Plugin : BaseUnityPlugin
                     new ItemRequirements { Name = "BlackCore", Amount = 2, UpgradeAmount = 0 },
                     new ItemRequirements { Name = "Eitr", Amount = 2, UpgradeAmount = 0 }
                 ], 
+            SpriteName = "Mage_table_1",
             Description = "$galdr_table_upgrade_1_desc", StationKey = "galdr", MinQualityLevel = 1
         },
         new() {Name="$galdr_table_upgrade_2", CraftingStation = CraftingStations.GaldrTable, ItemRequirements =
@@ -343,6 +371,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "BlackMarble", Amount = 5, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Eitr", Amount = 5, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Mage_table_2",
             Description = "$galdr_table_upgrade_2_desc", StationKey = "galdr", MinQualityLevel = 2
         },
         new() {Name="$galdr_table_upgrade_3", CraftingStation = CraftingStations.GaldrTable, ItemRequirements =
@@ -353,6 +382,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Eitr", Amount = 5, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "TrophySkeleton", Amount = 1, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Mage_table_3",
             Description = "$galdr_table_upgrade_3_desc", StationKey = "galdr", MinQualityLevel = 3
         },
         new() {Name="$galdr_table_upgrade_4", CraftingStation = CraftingStations.GaldrTable, ItemRequirements =
@@ -363,6 +393,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Eitr", Amount = 5, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "TrophyAsksvin", Amount = 1, UpgradeAmount = 0 }
             ], 
+            SpriteName = "Mage_table_4",
             Description = "$galdr_table_upgrade_4_desc", StationKey = "galdr", MinQualityLevel = 4
         },
     ];
@@ -520,7 +551,8 @@ public class Plugin : BaseUnityPlugin
                 CraftingStation = item.CraftingStation,
                 StackSize = 1,
                 Weight = 2f,
-                MinStationLevel = item.MinQualityLevel
+                MinStationLevel = item.MinQualityLevel,
+                Icon = AssetHolder.GetSprite(item.SpriteName)
             };
 
             foreach (var requirement in item.ItemRequirements)

@@ -4,10 +4,10 @@
   "$extension_tier_3": "Black Metal Storage Extension",
   "$extension_tier_4": "Flametal Storage Extension",
   
-  "$extension_tier_1_desc": "Adds 1 additional row to the storage interface.",
-  "$extension_tier_2_desc": "Adds 3 additional rows to the storage interface.",
-  "$extension_tier_3_desc": "Adds 5 additional rows to the storage interface.",
-  "$extension_tier_4_desc": "Adds 7 additional rows to the storage interface.",
+  "$extension_tier_1_desc": "Adds 1 additional row to the storage interface. Must be placed close to the storage interface. Can be stacked.",
+  "$extension_tier_2_desc": "Adds 3 additional rows to the storage interface. Must be placed close to the storage interface. Can be stacked.",
+  "$extension_tier_3_desc": "Adds 5 additional rows to the storage interface. Must be placed close to the storage interface. Can be stacked.",
+  "$extension_tier_4_desc": "Adds 7 additional rows to the storage interface. Must be placed close to the storage interface. Can be stacked.",
   
   "$workbench_upgrade_1": "Workbench Upgrade 1",
   "$workbench_upgrade_2": "Workbench Upgrade 2",

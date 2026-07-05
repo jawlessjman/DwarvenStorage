@@ -9,7 +9,7 @@ public class StorageUpgradeSlots : MonoBehaviour
 
     private const string ZdoKey = "dwarven_upgrade_inventory";
     private const int Width = 1;
-    private const int Height = 6;
+    private const int Height = 8;
 
     private ZNetView _nview;
     private Inventory _inventory;
@@ -27,7 +27,7 @@ public class StorageUpgradeSlots : MonoBehaviour
         return _inventory;
     }
 
-    public static bool CanAcceptItem(ItemDrop.ItemData item)
+    private static bool CanAcceptItem(ItemDrop.ItemData item)
     {
         if (item == null) return false;
 
@@ -102,7 +102,7 @@ public class StorageUpgradeSlots : MonoBehaviour
     {
         if (_nview == null || !_nview.IsValid()) return;
 
-        var data = _nview.GetZDO().GetString(ZdoKey, "");
+        var data = _nview.GetZDO().GetString(ZdoKey);
         if (string.IsNullOrEmpty(data)) return;
 
         var pkg = new ZPackage(data);
