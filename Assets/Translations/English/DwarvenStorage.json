@@ -1,0 +1,90 @@
+﻿{
+  "$extension_tier_1" : "Bronze Storage Extension",
+  "$extension_tier_2" : "Iron Storage Extension",
+  "$extension_tier_3": "Black Metal Storage Extension",
+  "$extension_tier_4": "Flametal Storage Extension",
+  
+  "$extension_tier_1_desc": "Adds 1 additional row to the storage interface.",
+  "$extension_tier_2_desc": "Adds 3 additional rows to the storage interface.",
+  "$extension_tier_3_desc": "Adds 5 additional rows to the storage interface.",
+  "$extension_tier_4_desc": "Adds 7 additional rows to the storage interface.",
+  
+  "$workbench_upgrade_1": "Workbench Upgrade 1",
+  "$workbench_upgrade_2": "Workbench Upgrade 2",
+  "$workbench_upgrade_3": "Workbench Upgrade 3",
+  "$workbench_upgrade_4": "Workbench Upgrade 4",
+  "$workbench_upgrade_5": "Workbench Upgrade 5",
+  
+  "$workbench_upgrade_1_desc": "Adds a working workbench to the storage interface. Requires 1 upgrade slot.",
+  "$workbench_upgrade_2_desc": "Adds a level 2 workbench to the storage interface. Requires 1 upgrade slot.",
+  "$workbench_upgrade_3_desc": "Adds a level 3 workbench to the storage interface. Requires 1 upgrade slot.",
+  "$workbench_upgrade_4_desc": "Adds a level 4 workbench to the storage interface. Requires 1 upgrade slot.",
+  "$workbench_upgrade_5_desc": "Adds a level 5 workbench to the storage interface. Requires 1 upgrade slot.",
+  
+  "$forge_upgrade_1": "Forge Upgrade 1",
+  "$forge_upgrade_2": "Forge Upgrade 2",
+  "$forge_upgrade_3": "Forge Upgrade 3",
+  "$forge_upgrade_4": "Forge Upgrade 4",
+  "$forge_upgrade_5": "Forge Upgrade 5",
+  "$forge_upgrade_6": "Forge Upgrade 6",
+  "$forge_upgrade_7": "Forge Upgrade 7",
+  
+  "$forge_upgrade_1_desc": "Adds a working forge to the storage interface. Requires 1 upgrade slot.",
+  "$forge_upgrade_2_desc": "Adds a level 2 forge to the storage interface. Requires 1 upgrade slot.",
+  "$forge_upgrade_3_desc": "Adds a level 3 forge to the storage interface. Requires 1 upgrade slot.",
+  "$forge_upgrade_4_desc": "Adds a level 4 forge to the storage interface. Requires 1 upgrade slot.",
+  "$forge_upgrade_5_desc": "Adds a level 5 forge to the storage interface. Requires 1 upgrade slot.",
+  "$forge_upgrade_6_desc": "Adds a level 6 forge to the storage interface. Requires 1 upgrade slot.",
+  "$forge_upgrade_7_desc": "Adds a level 7 forge to the storage interface. Requires 1 upgrade slot.",
+  
+  "$cauldron_upgrade_1": "Cauldron Upgrade 1",
+  "$cauldron_upgrade_2": "Cauldron Upgrade 2",
+  "$cauldron_upgrade_3": "Cauldron Upgrade 3",
+  "$cauldron_upgrade_4": "Cauldron Upgrade 4",
+  "$cauldron_upgrade_5": "Cauldron Upgrade 5",
+  "$cauldron_upgrade_6": "Cauldron Upgrade 6",
+
+  "$cauldron_upgrade_1_desc": "Adds a working cauldron to the storage interface. Requires 1 upgrade slot.",
+  "$cauldron_upgrade_2_desc": "Adds a level 2 cauldron to the storage interface. Requires 1 upgrade slot.",
+  "$cauldron_upgrade_3_desc": "Adds a level 3 cauldron to the storage interface. Requires 1 upgrade slot.",
+  "$cauldron_upgrade_4_desc": "Adds a level 4 cauldron to the storage interface. Requires 1 upgrade slot.",
+  "$cauldron_upgrade_5_desc": "Adds a level 5 cauldron to the storage interface. Requires 1 upgrade slot.",
+  "$cauldron_upgrade_6_desc": "Adds a level 6 cauldron to the storage interface. Requires 1 upgrade slot.",
+  
+  "$stonecutter_upgrade": "Stonecutter Upgrade",
+  "$stonecutter_upgrade_desc": "Adds a working stonecutter to the storage interface. Requires 1 upgrade slot.",
+    
+  "$artisan_table_upgrade_1" : "Artisan Table Upgrade 1",
+  "$artisan_table_upgrade_2" : "Artisan Table Upgrade 2",
+  
+  "$artisan_table_upgrade_1_desc" : "Adds a working artisan table to the storage interface. Requires 1 upgrade slot.",
+  "$artisan_table_upgrade_2_desc" : "Adds a level 2 artisan table to the storage interface. Requires 1 upgrade slot.",
+  
+  "$prep_table_upgrade": "Food Preparation Table Upgrade",
+  "$prep_table_upgrade_desc": "Adds a working food preparation table to the storage interface. Requires 1 upgrade slot.",
+  
+  "$blackforge_upgrade_1": "Blackforge Upgrade 1",
+  "$blackforge_upgrade_2": "Blackforge Upgrade 2",
+  "$blackforge_upgrade_3": "Blackforge Upgrade 3",
+  "$blackforge_upgrade_4": "Blackforge Upgrade 4",
+  "$blackforge_upgrade_5": "Blackforge Upgrade 5",
+  
+  "$blackforge_upgrade_1_desc": "Adds a working blackforge to the storage interface. Requires 1 upgrade slot.",
+  "$blackforge_upgrade_2_desc": "Adds a level 2 blackforge to the storage interface. Requires 1 upgrade slot.",
+  "$blackforge_upgrade_3_desc": "Adds a level 3 blackforge to the storage interface. Requires 1 upgrade slot.",
+  "$blackforge_upgrade_4_desc": "Adds a level 4 blackforge to the storage interface. Requires 1 upgrade slot.",
+  "$blackforge_upgrade_5_desc": "Adds a level 5 blackforge to the storage interface. Requires 1 upgrade slot.",
+  
+  "$galdr_table_upgrade_1": "Galdr Table Upgrade 1",
+  "$galdr_table_upgrade_2": "Galdr Table Upgrade 2",
+  "$galdr_table_upgrade_3": "Galdr Table Upgrade 3",
+  "$galdr_table_upgrade_4": "Galdr Table Upgrade 4",
+  
+  "$galdr_table_upgrade_1_desc": "Adds a working galdr table to the storage interface. Requires 1 upgrade slot.",
+  "$galdr_table_upgrade_2_desc": "Adds a level 2 galdr table to the storage interface. Requires 1 upgrade slot.",
+  "$galdr_table_upgrade_3_desc": "Adds a level 3 galdr table to the storage interface. Requires 1 upgrade slot.",
+  "$galdr_table_upgrade_4_desc": "Adds a level 4 galdr table to the storage interface. Requires 1 upgrade slot.",
+
+  "$piece_dwarven_interface": "Storage Interface",
+  "$piece_dwarven_interface_desc": "Creates an interface for the storage system."
+}

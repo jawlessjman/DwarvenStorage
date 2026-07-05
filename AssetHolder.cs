@@ -13,7 +13,11 @@ public static class AssetHolder
 
     private static readonly Dictionary<string, string> PrefabNames = new()
     {
-        { "Interface", "assets/dwarvenstorage/prefabs/dwarven_interface.prefab" }
+        { "Interface", "assets/dwarvenstorage/prefabs/dwarven_interface.prefab" },
+        { "Extension_Bronze", "assets/dwarvenstorage/prefabs/extension_bronze.prefab" },
+        { "Extension_Iron", "assets/dwarvenstorage/prefabs/extension_iron.prefab" },
+        { "Extension_Black_Metal", "assets/dwarvenstorage/prefabs/extension_black_metal.prefab" },
+        { "Extension_Flametal", "assets/dwarvenstorage/prefabs/extension_flametal.prefab" }
     };
 
     private static bool _loaded;

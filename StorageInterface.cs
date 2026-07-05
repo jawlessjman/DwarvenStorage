@@ -78,14 +78,14 @@ public class StorageInterface : MonoBehaviour, Interactable
     private void Awake()
     {
         _container = gameObject.AddComponent<Container>();
-        _container.m_name = "Storage Interface";
-        _container.name = "Storage Interface";
+        _container.m_name = "$piece_dwarven_interface";
+        _container.name = "$piece_dwarven_interface";
         _container.m_width = MaxColumns;
         _container.m_height = MaxRows;
 
         if (_container.m_inventory != null)
         {
-            _container.m_inventory.m_name = "Storage Interface";
+            _container.m_inventory.m_name = "$piece_dwarven_interface";
             _container.m_inventory.m_width = MaxColumns;
             _container.m_inventory.m_height = MaxRows;
         }
@@ -142,8 +142,8 @@ public class StorageInterface : MonoBehaviour, Interactable
             if (extension == null) continue;
             if (!extension.IsInRange(this)) continue;
 
-            targetRows += extension.AddedRows;
-            targetColumns += extension.AddedColumns;
+            targetRows += extension.addedRows;
+            targetColumns += extension.addedColumns;
         }
         
         targetRows = Mathf.Clamp(targetRows, DefaultRows, MaxRows);
