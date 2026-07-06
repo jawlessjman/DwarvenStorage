@@ -141,7 +141,7 @@ public class StorageInterface : MonoBehaviour, Interactable
     }
 
     /// <summary>
-    /// This method is called when the object is destroyed by it's health reaching 0.
+    /// This method is called when the object is destroyed by its health reaching 0.
     /// </summary>
     private void OnDestruction()
     {
@@ -235,7 +235,7 @@ public class StorageInterface : MonoBehaviour, Interactable
     private void Update()
     {
         if (!_hasBeenOpened) return;
-        if (_panel == null || !_panel.activeSelf) return;
+        if (!_panel || !_panel.activeSelf) return;
 
         _extensionScanTimer += Time.deltaTime;
 
@@ -247,8 +247,8 @@ public class StorageInterface : MonoBehaviour, Interactable
 
     private void FixedUpdate()
     {
-        if (_panel == null || !_panel.activeSelf) return;
-        if (InventoryGui.instance != null && InventoryGui.instance.IsContainerOpen()) return;
+        if (!_panel || !_panel.activeSelf) return;
+        if (InventoryGui.instance && InventoryGui.instance.IsContainerOpen()) return;
 
         CloseInterface();
     }
@@ -286,12 +286,12 @@ public class StorageInterface : MonoBehaviour, Interactable
 
     private void CloseInterface()
     {
-        if (_panel != null)
+        if (_panel)
         {
             _panel.SetActive(false);
         }
 
-        if (InventoryGui.instance != null)
+        if (InventoryGui.instance)
         {
             InventoryGui.instance.Hide();
         }
@@ -311,7 +311,7 @@ public class StorageInterface : MonoBehaviour, Interactable
 
         foreach (var extension in extensions)
         {
-            if (extension == null) continue;
+            if (!extension) continue;
 
             extension.RefreshOwner(true);
 
@@ -339,7 +339,7 @@ public class StorageInterface : MonoBehaviour, Interactable
         int totalRows,
         int totalColumns)
     {
-        if (_extensionSummaryText == null) return;
+        if (!_extensionSummaryText) return;
 
         _extensionSummaryText.text =
             $"Extensions: {extensionCount}   Added Rows: +{addedRows}   Storage: {totalColumns}x{totalRows}";
@@ -347,14 +347,14 @@ public class StorageInterface : MonoBehaviour, Interactable
 
     private void ResizeStorage(int rows, int columns)
     {
-        if (_container == null || _container.m_inventory == null) return;
+        if (!_container || _container.m_inventory == null) return;
         if (_currentColumns == columns && _currentRows == rows) return;
 
         var isShrinking = _currentColumns > columns || _currentRows > rows;
 
         if (isShrinking)
         {
-            var canDropOverflow = _zNetView == null || !_zNetView.IsValid() || _zNetView.IsOwner();
+            var canDropOverflow = !_zNetView || !_zNetView.IsValid() || _zNetView.IsOwner();
 
             if (canDropOverflow)
             {
@@ -373,7 +373,7 @@ public class StorageInterface : MonoBehaviour, Interactable
 
         MarkStorageChanged();
 
-        if (InventoryGui.instance != null && InventoryGui.instance.IsContainerOpen())
+        if (InventoryGui.instance && InventoryGui.instance.IsContainerOpen())
         {
             InventoryGui.instance.SetupCrafting();
         }
@@ -415,7 +415,7 @@ public class StorageInterface : MonoBehaviour, Interactable
 
     private void MarkStorageChanged()
     {
-        if (_container == null) return;
+        if (!_container) return;
 
         try
         {
@@ -626,7 +626,7 @@ public class StorageInterface : MonoBehaviour, Interactable
             parent: _panel.transform,
             anchorMin: new Vector2(0.5f, 1f),
             anchorMax: new Vector2(0.5f, 1f),
-            position: new Vector2(0f, -45f),
+            position: new Vector2(90f, -45f),
             font: GUIManager.Instance.AveriaSerifBold,
             fontSize: 32,
             color: Color.white,
@@ -646,7 +646,7 @@ public class StorageInterface : MonoBehaviour, Interactable
         const float startY = 320f;
 
         const float stationTextX = -160f;
-        const float levelTextX = -0f;
+        const float levelTextX = -75f;
 
         const float stationTextWidth = 170f;
         const float levelTextWidth = 100f;
@@ -856,11 +856,9 @@ public class StorageInterface : MonoBehaviour, Interactable
                     ui.StationLabel.color = Color.red;
                 }
 
-                if (ui.LevelLabel != null)
-                {
-                    ui.LevelLabel.text = "";
-                    ui.LevelLabel.color = Color.red;
-                }
+                if (ui.LevelLabel == null) continue;
+                ui.LevelLabel.text = "";
+                ui.LevelLabel.color = Color.red;
             }
         }
     }
@@ -871,7 +869,7 @@ public class StorageInterface : MonoBehaviour, Interactable
             parent: _panel.transform,
             anchorMin: new Vector2(1f, 1f),
             anchorMax: new Vector2(1f, 1f),
-            position: new Vector2(-130f, -90f),
+            position: new Vector2(-115f, -120f),
             fontSize: 16,
             width: 180f,
             height: 35f
