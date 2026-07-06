@@ -15,7 +15,7 @@ public class StorageInterface : MonoBehaviour, Interactable
     private const int DefaultRows = 5;
     private const int DefaultColumns = 8;
     private const int MaxRows = 75;
-    private const int MaxColumns = 10;
+    private const int MaxColumns = 8;
     private const int UpgradeSlotCount = 8;
 
     private const float ExtensionScanInterval = 2f;
@@ -81,12 +81,14 @@ public class StorageInterface : MonoBehaviour, Interactable
 
     private void Awake()
     {
+        // Add the container component to the game object
         _container = gameObject.AddComponent<Container>();
         _container.m_name = "$piece_dwarven_interface";
         _container.name = "$piece_dwarven_interface";
         _container.m_width = MaxColumns;
         _container.m_height = MaxRows;
 
+        // Needed for the crafting station to work correctly
         if (_container.m_inventory != null)
         {
             _container.m_inventory.m_name = "$piece_dwarven_interface";
@@ -99,6 +101,7 @@ public class StorageInterface : MonoBehaviour, Interactable
 
         _zNetView = GetComponent<ZNetView>();
 
+        // Create the crafting station component
         _craftingStation = gameObject.AddComponent<CraftingStation>();
         _craftingStation.m_name = "$piece_workbench";
         _craftingStation.m_rangeBuild = 0f;
@@ -106,9 +109,19 @@ public class StorageInterface : MonoBehaviour, Interactable
         _craftingStation.m_discoverRange = 30f;
         _craftingStation.m_useDistance = 30f;
         _craftingStation.m_craftRequireRoof = false;
+        
+        // Set the sound effects for the crafting station
+        var workbenchPrefab = PrefabManager.Instance.GetPrefab("piece_workbench")?.GetComponent<CraftingStation>();
+        if (workbenchPrefab != null)
+        {
+            _craftingStation.m_craftItemDoneEffects = workbenchPrefab.m_craftItemDoneEffects;
+            _craftingStation.m_craftItemEffects = workbenchPrefab.m_craftItemEffects;
+            _craftingStation.m_repairItemDoneEffects = workbenchPrefab.m_repairItemDoneEffects;
+        }
 
         _upgradeSlots = GetComponent<StorageUpgradeSlots>();
         
+        // Add a method for when the storage interface is destroyed
         _wearNTearComponent = gameObject.GetComponent<WearNTear>();
         if (_wearNTearComponent != null)
         {
@@ -127,6 +140,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         }
     }
 
+    /// <summary>
+    /// This method is called when the object is destroyed by it's health reaching 0.
+    /// </summary>
     private void OnDestruction()
     {
         if (_hasDroppedUpgradeItems) return;
@@ -290,7 +306,6 @@ public class StorageInterface : MonoBehaviour, Interactable
 
         var extensionCount = 0;
         var addedRows = 0;
-        var addedColumns = 0;
 
         var extensions = FindObjectsByType<StorageInterfaceExtension>(FindObjectsSortMode.None);
 
@@ -305,7 +320,6 @@ public class StorageInterface : MonoBehaviour, Interactable
             extensionCount++;
 
             addedRows += extension.addedRows;
-            addedColumns += extension.addedColumns;
 
             targetRows += extension.addedRows;
             targetColumns += extension.addedColumns;
@@ -314,7 +328,7 @@ public class StorageInterface : MonoBehaviour, Interactable
         targetRows = Mathf.Clamp(targetRows, DefaultRows, MaxRows);
         targetColumns = Mathf.Clamp(targetColumns, DefaultColumns, MaxColumns);
 
-        UpdateExtensionSummaryText(extensionCount, addedRows, addedColumns, targetRows, targetColumns);
+        UpdateExtensionSummaryText(extensionCount, addedRows, targetRows, targetColumns);
 
         ResizeStorage(targetRows, targetColumns);
     }
@@ -322,7 +336,6 @@ public class StorageInterface : MonoBehaviour, Interactable
     private void UpdateExtensionSummaryText(
         int extensionCount,
         int addedRows,
-        int addedColumns,
         int totalRows,
         int totalColumns)
     {
@@ -719,8 +732,6 @@ public class StorageInterface : MonoBehaviour, Interactable
 
             _upgradeSlotUis.Add(new UpgradeSlotUI
             {
-                Root = slotObject,
-                Button = button,
                 Icon = icon,
                 StationLabel = stationLabel,
                 LevelLabel = levelLabel
@@ -989,8 +1000,6 @@ public class StorageInterface : MonoBehaviour, Interactable
 
     private class UpgradeSlotUI
     {
-        public GameObject Root;
-        public Button Button;
         public Image Icon;
         public Text StationLabel;
         public Text LevelLabel;

@@ -6,6 +6,9 @@ using UnityEngine;
 
 namespace DwarvenStorage;
 
+// Reference: https://github.com/aedenthorn/ValheimMods/blob/master/CraftFromContainers/BepInExPlugin.cs
+// Reference used for finding which methods to patch
+
 [HarmonyPatch]
 public static class CraftingPatches
 {
@@ -15,6 +18,14 @@ public static class CraftingPatches
     private static readonly System.Reflection.MethodInfo InventoryChangedMethod =
         AccessTools.Method(typeof(Inventory), "Changed");
 
+    /// <summary>
+    /// Check if the crafting station is usable
+    /// </summary>
+    /// <param name="__instance"></param>
+    /// <param name="player"></param>
+    /// <param name="showMessage"></param>
+    /// <param name="__result"></param>
+    /// <returns></returns>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(CraftingStation), nameof(CraftingStation.CheckUsable))]
     private static bool CheckUsablePrefix(
@@ -33,6 +44,12 @@ public static class CraftingPatches
         return false;
     }
 
+    /// <summary>
+    /// Get the level of the crafting station
+    /// </summary>
+    /// <param name="__instance"></param>
+    /// <param name="checkExtensions"></param>
+    /// <param name="__result"></param>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(CraftingStation), nameof(CraftingStation.GetLevel))]
     private static void GetLevelPostfix(
@@ -46,7 +63,17 @@ public static class CraftingPatches
 
         __result = Mathf.Max(1, storage.CurrentStationLevel);
     }
-
+    
+    /// <summary>
+    /// Check if the player has the required items to craft the item
+    /// </summary>
+    /// <param name="__instance"></param>
+    /// <param name="__result"></param>
+    /// <param name="piece"></param>
+    /// <param name="discover"></param>
+    /// <param name="qualityLevel"></param>
+    /// <param name="___m_knownMaterial"></param>
+    /// <param name="amount"></param>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(Player), nameof(Player.HaveRequirementItems))]
     private static void HaveRequirementItemsPostfix(
@@ -67,6 +94,7 @@ public static class CraftingPatches
         var container = storage.Container;
         if (container == null) return;
 
+        // Save references to the inventory
         var playerInventory = __instance.GetInventory();
         var storageInventory = container.GetInventory();
 
@@ -95,6 +123,14 @@ public static class CraftingPatches
         __result = true;
     }
 
+    /// <summary>
+    /// Consume the required items from the player inventory
+    /// </summary>
+    /// <param name="__instance"></param>
+    /// <param name="requirements"></param>
+    /// <param name="qualityLevel"></param>
+    /// <param name="multiplier"></param>
+    /// <returns></returns>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Player), nameof(Player.ConsumeResources))]
     private static bool ConsumeResourcesPrefix(
@@ -132,9 +168,7 @@ public static class CraftingPatches
                 Plugin.Logger.LogWarning(
                     $"Not enough {itemName}. Required={requiredAmount}, Available={totalAvailable}"
                 );
-
-                // This should not normally happen because HaveRequirementItems should block crafting.
-                // Returning true lets vanilla handle it instead of silently making items free.
+                
                 return true;
             }
 
@@ -158,6 +192,16 @@ public static class CraftingPatches
         return false;
     }
 
+    /// <summary>
+    /// Show the amount of the required items in the crafting interface
+    /// </summary>
+    /// <param name="__instance"></param>
+    /// <param name="elementRoot"></param>
+    /// <param name="req"></param>
+    /// <param name="player"></param>
+    /// <param name="craft"></param>
+    /// <param name="quality"></param>
+    /// <param name="craftMultiplier"></param>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.SetupRequirement))]
     private static void SetupRequirementPostfix(
@@ -200,7 +244,13 @@ public static class CraftingPatches
             amountText.color = Color.yellow;
         }
     }
+    
+    // Helper methods
 
+    /// <summary>
+    /// Save the storage container
+    /// </summary>
+    /// <param name="container"></param>
     private static void SaveContainer(Container container)
     {
         if (container == null) return;
@@ -215,6 +265,11 @@ public static class CraftingPatches
         }
     }
 
+    
+    /// <summary>
+    /// Mark the inventory as changed
+    /// </summary>
+    /// <param name="inventory"></param>
     private static void MarkInventoryChanged(Inventory inventory)
     {
         if (inventory == null) return;

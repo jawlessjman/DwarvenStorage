@@ -91,13 +91,6 @@ public static class AssetHolder
             return;
         }
 
-        Plugin.Logger.LogInfo("Loaded asset bundle");
-
-        foreach (var asset in _bundle.GetAllAssetNames())
-        {
-            Plugin.Logger.LogInfo($"Loaded asset: {asset}");
-        }
-
         foreach (var spriteNamePair in SpriteNames)
         {
             var key = spriteNamePair.Key;
@@ -106,12 +99,10 @@ public static class AssetHolder
             var sprite = _bundle.LoadAsset<Sprite>(path);
             if (sprite == null)
             {
-                Plugin.Logger.LogError($"Failed to load sprite: key={key}, path={path}");
                 continue;
             }
 
             Sprites[key] = sprite;
-            Plugin.Logger.LogInfo($"Loaded sprite: key={key}, path={path}, sprite={sprite.name}");
         }
 
         foreach (var prefabNamePair in PrefabNames)
@@ -122,39 +113,15 @@ public static class AssetHolder
             var prefab = _bundle.LoadAsset<GameObject>(path);
             if (prefab == null)
             {
-                Plugin.Logger.LogError($"Failed to load prefab: key={key}, path={path}");
                 continue;
             }
 
             Prefabs[key] = prefab;
-            Plugin.Logger.LogInfo($"Loaded prefab: key={key}, path={path}, prefab={prefab.name}");
         }
 
         Plugin.Logger.LogInfo($"Loaded prefabs: {Prefabs.Count}");
         Plugin.Logger.LogInfo($"Loaded sprites: {Sprites.Count}");
 
         _loaded = true;
-    }
-
-    public static void PrintAssetNames()
-    {
-        if (!_loaded)
-        {
-            Plugin.Logger.LogInfo("Asset bundle not loaded");
-            return;
-        }
-
-        if (_bundle == null)
-        {
-            Plugin.Logger.LogInfo("Asset bundle is null");
-            return;
-        }
-
-        Plugin.Logger.LogInfo("Printing asset bundle");
-
-        foreach (var asset in _bundle.GetAllAssetNames())
-        {
-            Plugin.Logger.LogInfo($"Loaded asset: {asset}");
-        }
     }
 }

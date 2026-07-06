@@ -17,7 +17,7 @@ public class Plugin : BaseUnityPlugin
     public const string ModGuid = "jawlessjman.DwarvenStorage";
     public const string ModName = "DwarvenStorage";
     public const string ModVersion = "1.0.0";
-
+    
     public static readonly Dictionary<string, string> UpgradeStationsByPrefabName = new();
     public static readonly Dictionary<string, int> UpgradeAmountsByPrefabName = new();
 
@@ -412,6 +412,7 @@ public class Plugin : BaseUnityPlugin
         // Load Assets
         AssetHolder.LoadAssetBundle();
         
+        // Load Translations
         const string resourceName = $"{ModName}.Assets.Translations.English.DwarvenStorage.json";
         var englishLocalized = AssetUtils.LoadTextFromResources(resourceName);
         if (string.IsNullOrEmpty(englishLocalized))
@@ -430,35 +431,58 @@ public class Plugin : BaseUnityPlugin
         
         Logger.LogInfo($"Plugin {ModName}-{ModVersion} is loaded!");
     }
-    
-    private static void CreateInterface()
+
+    /// <summary>
+    /// Creates a custom piece
+    /// </summary>
+    /// <param name="name">translation key for the name of the piece</param>
+    /// <param name="description">translation key for the description of the piece</param>
+    /// <param name="craftingStation">Crafting station to use</param>
+    /// <param name="category">Category for the storage system</param>
+    /// <param name="itemRequirements">Item requirements</param>
+    /// <param name="prefabName">Name of the prefab from the asset bundle</param>
+    /// <returns></returns>
+    private static CustomPiece CreatePiece(string name, string description, string craftingStation, string category, List<ItemRequirements> itemRequirements, string prefabName)
     {
+        // Create the config
         var config = new PieceConfig
         {
-            Name = "$piece_dwarven_interface",
-            Description = "$piece_dwarven_interface_desc",
+            Name = name,
+            Description = description,
             PieceTable = PieceTables.Hammer,
-            CraftingStation = CraftingStations.Workbench,
-            Category = PieceCategories.Misc,
+            CraftingStation = craftingStation,
+            Category = category,
         };
 
-        config.AddRequirement("Wood", 1);
-
+        // Add the requirements
+        foreach (var requirement in itemRequirements)
+        {
+            config.AddRequirement(requirement.Name, requirement.Amount);
+        }
+        
+        // Create the prefab
         var customPiece = new CustomPiece(
             AssetHolder.Bundle,
-            "dwarven_interface",
+            prefabName,
             true,
             config
         );
-
-        var piece = customPiece.PiecePrefab.GetComponent<Piece>();
+        
+        var prefab = customPiece.PiecePrefab;
+        
+        // Get the piece and WearNTear components
+        var piece = prefab.GetComponent<Piece>();
+        var pieceTear = prefab.GetComponent<WearNTear>();
         var woodWallPrefab = PrefabManager.Instance.GetPrefab("wood_wall_quarter");
         Piece woodWallPiece = null;
+        WearNTear wearNTear = null;
         if (woodWallPrefab != null)
         {
             woodWallPiece = woodWallPrefab.GetComponent<Piece>();
+            wearNTear = woodWallPrefab.GetComponent<WearNTear>();
         }
 
+        // Apply the place effect
         if (piece != null)
         {
             piece.m_clipEverything = false;
@@ -468,66 +492,55 @@ public class Plugin : BaseUnityPlugin
             }
         }
 
-        var prefab = customPiece.PiecePrefab;
-
-        prefab.name = "dwarven_interface";
-
-        var zNetView = prefab.GetComponent<ZNetView>();
-        if (zNetView == null)
+        // Apply the destroy effects
+        if (pieceTear != null)
         {
-            Logger.LogError("dwarven_interface is missing ZNetView component.");
-            return;
+            if (wearNTear != null)
+            {
+                pieceTear.m_destroyedEffect = wearNTear.m_destroyedEffect;
+                pieceTear.m_hitEffect = wearNTear.m_hitEffect;
+            }
         }
         
+        // Apply ZNet Logic
+        var zNetView = prefab.GetComponent<ZNetView>();
+        if (zNetView == null) return customPiece;
         zNetView.m_persistent = true;
         zNetView.m_type = ZDO.ObjectType.Solid;
         zNetView.m_syncInitialScale = true;
-        
-        prefab.AddComponent<StorageInterface>();
-        prefab.AddComponent<StorageUpgradeSlots>();
 
-        PieceManager.Instance.AddPiece(customPiece);
+        return customPiece;
+    }
+    
+    /// <summary>
+    /// Create the main storage interface
+    /// </summary>
+    private static void CreateInterface()
+    {
+        // Use helper method to create the prefab
+        var prefab = CreatePiece("$piece_dwarven_interface", "$piece_dwarven_interface_desc", CraftingStations.Workbench, PieceCategories.Misc,
+            [new ItemRequirements(){Name="Wood", Amount = 1}], "dwarven_interface");
+        
+        // Add the interface components
+        prefab.PiecePrefab.AddComponent<StorageInterface>();
+        prefab.PiecePrefab.AddComponent<StorageUpgradeSlots>();
+
+        PieceManager.Instance.AddPiece(prefab);
 
         PrefabManager.OnVanillaPrefabsAvailable -= CreateInterface;
     }
 
+    /// <summary>
+    /// Create the storage extensions
+    /// </summary>
     private static void CreateStorageExtensions()
     {
+        // Create the storage extensions
         foreach (var storage in StorageExtensions)
         {
-            var pieceConfig = new PieceConfig()
-            {
-                Name = storage.Name,
-                PieceTable = PieceTables.Hammer,
-                Description = storage.Description,
-                CraftingStation = storage.CraftingStation,
-                Category = PieceCategories.Misc,
-            };
-
-            foreach (var requirement in storage.ItemRequirements)
-            {
-                pieceConfig.AddRequirement(requirement.Name, requirement.Amount);
-            }
+            var piece = CreatePiece(storage.Name, storage.Description, storage.CraftingStation, PieceCategories.Misc, storage.ItemRequirements, storage.PrefabName);
             
-            var piece = new CustomPiece(
-                AssetHolder.Bundle, 
-                storage.PrefabName, 
-                true,
-                pieceConfig
-                );
-            
-            var prefab = piece.PiecePrefab;
-            var zNetView = prefab.GetComponent<ZNetView>();
-            if (zNetView == null)
-            {
-                Logger.LogError("dwarven_interface is missing ZNetView component.");
-                return;
-            }
-        
-            zNetView.m_persistent = true;
-            zNetView.m_type = ZDO.ObjectType.Solid;
-            zNetView.m_syncInitialScale = true;
-            
+            // Add and set the interface extension component
             var extension = piece.PiecePrefab.AddComponent<StorageInterfaceExtension>();
             extension.addedRows = storage.Rows;
             extension.addedColumns = 0;
@@ -540,10 +553,15 @@ public class Plugin : BaseUnityPlugin
         PrefabManager.OnVanillaPrefabsAvailable -= CreateStorageExtensions;
     }
 
+    /// <summary>
+    /// Create the upgrade items
+    /// </summary>
     private static void CreateUpgradeItems()
     {
+        // Create the upgrade items
         foreach (var item in StorageUpgrades)
         {
+            // Create the item
             var itemConfig = new ItemConfig()
             {
                 Name = item.Name,
@@ -555,17 +573,20 @@ public class Plugin : BaseUnityPlugin
                 Icon = AssetHolder.GetSprite(item.SpriteName)
             };
 
+            // Add the requirements
             foreach (var requirement in item.ItemRequirements)
             {
                 itemConfig.AddRequirement(requirement.Name, requirement.Amount, requirement.UpgradeAmount);
             }
             
+            // Create the item
             var customItem = new CustomItem(item.Name, "AskHide", itemConfig);
             
+            // Add the custom data
             customItem.ItemDrop.m_itemData.m_quality = item.MinQualityLevel;
-            
             customItem.ItemDrop.m_itemData.m_customData["DwarvenUpgrade"] = item.StationKey;
             
+            // Save the keys to be used by the interface for when the m_customData resets
             UpgradeStationsByPrefabName[item.Name] = item.StationKey;
             UpgradeAmountsByPrefabName[item.Name] = item.MinQualityLevel;
             

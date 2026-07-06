@@ -24,7 +24,7 @@ public class StorageInterfaceExtension : MonoBehaviour, Hoverable
     private string _cachedHoverText;
     private string _cachedHoverName;
 
-    public bool IsOwned => _owningInterface != null;
+    private bool IsOwned => _owningInterface != null;
 
     private void Awake()
     {
@@ -34,7 +34,7 @@ public class StorageInterfaceExtension : MonoBehaviour, Hoverable
 
     public bool IsOwnedBy(StorageInterface storageInterface)
     {
-        return storageInterface != null && _owningInterface == storageInterface;
+        return storageInterface && _owningInterface == storageInterface;
     }
 
     public void RefreshOwner(bool force = false)
@@ -46,7 +46,7 @@ public class StorageInterfaceExtension : MonoBehaviour, Hoverable
 
         _nextOwnerRefreshTime = Time.time + OwnerRefreshInterval;
         
-        if (_owningInterface != null && IsInRangeOf(_owningInterface))
+        if (_owningInterface && IsInRangeOf(_owningInterface))
         {
             return;
         }
@@ -56,7 +56,7 @@ public class StorageInterfaceExtension : MonoBehaviour, Hoverable
         var interfaces = FindObjectsByType<StorageInterface>(FindObjectsSortMode.None);
 
         _owningInterface = interfaces
-            .Where(storageInterface => storageInterface != null)
+            .Where(storageInterface => storageInterface)
             .Where(IsInRangeOf)
             .OrderBy(storageInterface =>
                 Vector3.Distance(transform.position, storageInterface.transform.position)
@@ -64,9 +64,9 @@ public class StorageInterfaceExtension : MonoBehaviour, Hoverable
             .FirstOrDefault();
     }
 
-    public bool IsInRangeOf(StorageInterface storageInterface)
+    private bool IsInRangeOf(StorageInterface storageInterface)
     {
-        if (storageInterface == null) return false;
+        if (!storageInterface) return false;
 
         return Vector3.Distance(
             transform.position,
@@ -84,7 +84,6 @@ public class StorageInterfaceExtension : MonoBehaviour, Hoverable
 
     public string GetHoverText()
     {
-        // Throttled, so this no longer scans every frame.
         RefreshOwner();
 
         var status = IsOwned
@@ -96,7 +95,6 @@ public class StorageInterfaceExtension : MonoBehaviour, Hoverable
 
     public string GetHoverName()
     {
-        // Throttled, so this no longer scans every frame.
         RefreshOwner();
 
         var status = IsOwned
