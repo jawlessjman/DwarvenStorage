@@ -519,7 +519,7 @@ public class Plugin : BaseUnityPlugin
     {
         // Use helper method to create the prefab
         var prefab = CreatePiece("$piece_dwarven_interface", "$piece_dwarven_interface_desc", CraftingStations.Workbench, PieceCategories.Misc,
-            [new ItemRequirements(){Name="Wood", Amount = 1}], "dwarven_interface");
+            [new ItemRequirements {Name="Wood", Amount = 10}, new ItemRequirements {Name="Stone", Amount = 4}, new ItemRequirements {Name="SurtlingCore", Amount = 2}], "dwarven_interface");
         
         // Add the interface components
         prefab.PiecePrefab.AddComponent<StorageInterface>();
