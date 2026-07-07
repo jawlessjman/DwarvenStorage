@@ -23,6 +23,8 @@ public static class AssetHolder
 
     private static readonly Dictionary<string, string> SpriteNames = new()
     {
+        { "Interface", "assets/dwarvenstorage/models/icons/interface_icon.png" },
+        
         { "Workbench_1", "assets/dwarvenstorage/models/icons/items/workbench_upgrade_1.png" },
         { "Workbench_2", "assets/dwarvenstorage/models/icons/items/workbench_upgrade_2.png" },
         { "Workbench_3", "assets/dwarvenstorage/models/icons/items/workbench_upgrade_3.png" },
@@ -101,6 +103,8 @@ public static class AssetHolder
             {
                 continue;
             }
+            
+            Plugin.Logger.LogInfo($"Loaded sprite: {key} - {path}");
 
             Sprites[key] = sprite;
         }

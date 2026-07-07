@@ -109,6 +109,8 @@ public class StorageInterface : MonoBehaviour, Interactable
         _craftingStation.m_discoverRange = 30f;
         _craftingStation.m_useDistance = 30f;
         _craftingStation.m_craftRequireRoof = false;
+
+        _craftingStation.m_icon = AssetHolder.GetSprite("Interface");
         
         // Set the sound effects for the crafting station
         var workbenchPrefab = PrefabManager.Instance.GetPrefab("piece_workbench")?.GetComponent<CraftingStation>();
@@ -642,11 +644,11 @@ public class StorageInterface : MonoBehaviour, Interactable
     {
         const float slotSize = 64f;
         const float slotSpacing = 76f;
-        const float startX = -295f;
+        const float startX = -240f;
         const float startY = 320f;
 
-        const float stationTextX = -160f;
-        const float levelTextX = -75f;
+        const float stationTextX = -110f;
+        const float levelTextX = 15f;
 
         const float stationTextWidth = 170f;
         const float levelTextWidth = 100f;

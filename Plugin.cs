@@ -296,7 +296,7 @@ public class Plugin : BaseUnityPlugin
                     new ItemRequirements { Name = "Iron", Amount = 2, UpgradeAmount = 0 },
                     new ItemRequirements { Name = "LeatherScraps", Amount = 7, UpgradeAmount = 0 }
                 ], 
-            SpriteName = "Prep_Table_1",
+            SpriteName = "Prep_table_1",
             Description = "$prep_table_upgrade_desc", StationKey = "preptable", MinQualityLevel = 1
         },
         
@@ -307,7 +307,7 @@ public class Plugin : BaseUnityPlugin
                     new ItemRequirements { Name = "YggdrasilWood", Amount = 5, UpgradeAmount = 0 },
                     new ItemRequirements { Name = "BlackCore", Amount = 2, UpgradeAmount = 0 },
                 ], 
-            SpriteName = "Black_Forge_1",
+            SpriteName = "Black_forge_1",
             Description = "$blackforge_upgrade_1_desc", StationKey = "blackforge", MinQualityLevel = 1
         },
         new() {Name="$blackforge_upgrade_2", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
@@ -317,7 +317,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Copper", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "BlackMarble", Amount = 2, UpgradeAmount = 0 },
             ], 
-            SpriteName = "Black_Forge_2",
+            SpriteName = "Black_forge_2",
             Description = "$blackforge_upgrade_2_desc", StationKey = "blackforge", MinQualityLevel = 2
         },
         new() {Name="$blackforge_upgrade_3", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
@@ -327,7 +327,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Copper", Amount = 4, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "MechanicalSpring", Amount = 1, UpgradeAmount = 0 },
             ], 
-            SpriteName = "Black_Forge_3",
+            SpriteName = "Black_forge_3",
             Description = "$blackforge_upgrade_3_desc", StationKey = "blackforge", MinQualityLevel = 3
         },
         new() {Name="$blackforge_upgrade_4", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
@@ -338,7 +338,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Blackwood", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "CharredBone", Amount = 2, UpgradeAmount = 0 }
             ], 
-            SpriteName = "Black_Forge_4",
+            SpriteName = "Black_forge_4",
             Description = "$blackforge_upgrade_4_desc", StationKey = "blackforge", MinQualityLevel = 4
         },
         new() {Name="$blackforge_upgrade_5", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
@@ -349,7 +349,7 @@ public class Plugin : BaseUnityPlugin
                 new ItemRequirements { Name = "Blackwood", Amount = 4, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "MorgenSinew", Amount = 1, UpgradeAmount = 0 }
             ], 
-            SpriteName = "Black_Forge_5",
+            SpriteName = "Black_forge_5",
             Description = "$blackforge_upgrade_5_desc", StationKey = "blackforge", MinQualityLevel = 5
         },
         
