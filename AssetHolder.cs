@@ -67,6 +67,11 @@ public static class AssetHolder
 
     private static bool _loaded;
 
+    /// <summary>
+    /// Get a prefab from the bundle
+    /// </summary>
+    /// <param name="key">prefab key</param>
+    /// <returns>Prefab</returns>
     public static GameObject GetPrefab(string key)
     {
         if (!_loaded) return null;
@@ -74,6 +79,11 @@ public static class AssetHolder
         return Prefabs.TryGetValue(key, out var prefab) ? prefab : null;
     }
 
+    /// <summary>
+    /// Get a sprite loaded from the bundle
+    /// </summary>
+    /// <param name="key">sprite key</param>
+    /// <returns>A sprite</returns>
     public static Sprite GetSprite(string key)
     {
         if (!_loaded) return null;
@@ -81,6 +91,9 @@ public static class AssetHolder
         return Sprites.TryGetValue(key, out var sprite) ? sprite : null;
     }
 
+    /// <summary>
+    /// Load all the assets from the bundle
+    /// </summary>
     public static void LoadAssetBundle()
     {
         if (_loaded) return;
@@ -93,6 +106,7 @@ public static class AssetHolder
             return;
         }
 
+        // Load sprites from the bundle
         foreach (var spriteNamePair in SpriteNames)
         {
             var key = spriteNamePair.Key;
@@ -109,6 +123,7 @@ public static class AssetHolder
             Sprites[key] = sprite;
         }
 
+        // Load the prefabs from the bundle
         foreach (var prefabNamePair in PrefabNames)
         {
             var key = prefabNamePair.Key;

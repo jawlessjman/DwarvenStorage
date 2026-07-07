@@ -130,6 +130,7 @@ public class StorageInterface : MonoBehaviour, Interactable
             _wearNTearComponent.m_onDestroyed += OnDestruction;
         }
 
+        // Add an event for when the upgrades change
         if (_upgradeSlots != null)
         {
             _upgradeSlots.OnUpgradesChanged += OnUpgradesChanged;
@@ -160,6 +161,7 @@ public class StorageInterface : MonoBehaviour, Interactable
             return;
         }
 
+        // Which items to drop (the upgrades) items drop on their own
         var itemsToDrop = inventory.m_inventory
             .Where(item => item != null)
             .ToList();
@@ -190,6 +192,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         _upgradeSlots.InvokeChanged();
     }
 
+    /// <summary>
+    /// When the object is destroyed
+    /// </summary>
     private void OnDestroy()
     {
         if (_upgradeSlots != null)
@@ -202,6 +207,7 @@ public class StorageInterface : MonoBehaviour, Interactable
             _wearNTearComponent.m_onDestroyed -= OnDestruction;
         }
 
+        // Make it so that the extensions stop recognizing this interface
         foreach (var extension in FindObjectsByType<StorageInterfaceExtension>(FindObjectsSortMode.None))
         {
             extension.ReleaseOwner(this);
@@ -213,6 +219,13 @@ public class StorageInterface : MonoBehaviour, Interactable
         }
     }
 
+    /// <summary>
+    /// When interacted with by the player
+    /// </summary>
+    /// <param name="user">Player who interacted</param>
+    /// <param name="hold">I think this for if they are holding the interacted key</param>
+    /// <param name="alt"></param>
+    /// <returns>If they interacted</returns>
     public bool Interact(Humanoid user, bool hold, bool alt)
     {
         if (hold) return false;
@@ -229,11 +242,20 @@ public class StorageInterface : MonoBehaviour, Interactable
         return true;
     }
 
+    /// <summary>
+    /// This is a part of the interface, but it's not used for anything'
+    /// </summary>
+    /// <param name="user"></param>
+    /// <param name="item"></param>
+    /// <returns></returns>
     public bool UseItem(Humanoid user, ItemDrop.ItemData item)
     {
         return false;
     }
 
+    /// <summary>
+    /// Update the storage size based on the extensions
+    /// </summary>
     private void Update()
     {
         if (!_hasBeenOpened) return;
@@ -247,6 +269,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         RebuildStorageSizeFromExtensions();
     }
 
+    /// <summary>
+    /// Fixed update for checking if the player is still in the inventory
+    /// </summary>
     private void FixedUpdate()
     {
         if (!_panel || !_panel.activeSelf) return;
@@ -255,6 +280,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         CloseInterface();
     }
 
+    /// <summary>
+    /// Opens the interface
+    /// </summary>
     private void OpenInterface()
     {
         if (GUIManager.Instance == null) return;
@@ -268,6 +296,7 @@ public class StorageInterface : MonoBehaviour, Interactable
         RebuildStationUpgrades();
         EnsureValidCurrentStation();
         
+        // Rebuild the container size
         RebuildStorageSizeFromExtensions();
 
         if (_panel == null)
@@ -276,9 +305,11 @@ public class StorageInterface : MonoBehaviour, Interactable
             _panel.SetActive(false);
         }
 
+        // Refresh crafting stations and upgrades
         RefreshStationDropdown();
         RefreshUpgradeSlots();
 
+        // Show the container for the interface
         InventoryGui.instance.Show(_container);
 
         _panel.SetActive(true);
@@ -286,6 +317,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         ApplyCurrentCraftingStation();
     }
 
+    /// <summary>
+    /// Closes the interface
+    /// </summary>
     private void CloseInterface()
     {
         if (_panel)
@@ -298,9 +332,13 @@ public class StorageInterface : MonoBehaviour, Interactable
             InventoryGui.instance.Hide();
         }
 
+        // Reset the crafting station in the inventory so it does not still show the crafting station from the interface
         ResetPlayerCrafting();
     }
 
+    /// <summary>
+    /// Rebuild the storage size from the extensions around it
+    /// </summary>
     private void RebuildStorageSizeFromExtensions()
     {
         var targetRows = DefaultRows;
@@ -309,6 +347,7 @@ public class StorageInterface : MonoBehaviour, Interactable
         var extensionCount = 0;
         var addedRows = 0;
 
+        // Get the extensions
         var extensions = FindObjectsByType<StorageInterfaceExtension>(FindObjectsSortMode.None);
 
         foreach (var extension in extensions)
@@ -330,11 +369,20 @@ public class StorageInterface : MonoBehaviour, Interactable
         targetRows = Mathf.Clamp(targetRows, DefaultRows, MaxRows);
         targetColumns = Mathf.Clamp(targetColumns, DefaultColumns, MaxColumns);
 
+        // Update the text on the interface
         UpdateExtensionSummaryText(extensionCount, addedRows, targetRows, targetColumns);
 
+        // Resize the storage to the new size
         ResizeStorage(targetRows, targetColumns);
     }
     
+    /// <summary>
+    /// Update the extension summary text
+    /// </summary>
+    /// <param name="extensionCount"></param>
+    /// <param name="addedRows">rows to be added</param>
+    /// <param name="totalRows"></param>
+    /// <param name="totalColumns"></param>
     private void UpdateExtensionSummaryText(
         int extensionCount,
         int addedRows,
@@ -347,6 +395,11 @@ public class StorageInterface : MonoBehaviour, Interactable
             $"Extensions: {extensionCount}   Added Rows: +{addedRows}   Storage: {totalColumns}x{totalRows}";
     }
 
+    /// <summary>
+    /// Resize the storage to the new size
+    /// </summary>
+    /// <param name="rows"></param>
+    /// <param name="columns"></param>
     private void ResizeStorage(int rows, int columns)
     {
         if (!_container || _container.m_inventory == null) return;
@@ -354,6 +407,7 @@ public class StorageInterface : MonoBehaviour, Interactable
 
         var isShrinking = _currentColumns > columns || _currentRows > rows;
 
+        // If the size is smaller than drop the items that were in those slots
         if (isShrinking)
         {
             var canDropOverflow = !_zNetView || !_zNetView.IsValid() || _zNetView.IsOwner();
@@ -383,6 +437,11 @@ public class StorageInterface : MonoBehaviour, Interactable
         Plugin.Logger.LogInfo($"Storage resized to {columns}x{rows}");
     }
 
+    /// <summary>
+    /// Drop items from the columns and rows
+    /// </summary>
+    /// <param name="columns"></param>
+    /// <param name="rows"></param>
     private void DropItemsOutsideBounds(int columns, int rows)
     {
         var inventory = _container.m_inventory;
@@ -415,6 +474,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         }
     }
 
+    /// <summary>
+    /// Save the inventory of the interface
+    /// </summary>
     private void MarkStorageChanged()
     {
         if (!_container) return;
@@ -441,6 +503,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         }
     }
 
+    /// <summary>
+    /// Rebuild the upgrades for the interface
+    /// </summary>
     private void OnUpgradesChanged()
     {
         RebuildStationUpgrades();
@@ -455,6 +520,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         }
     }
 
+    /// <summary>
+    /// Rebuild the upgrades for the interface
+    /// </summary>
     private void RebuildStationUpgrades()
     {
         foreach (var station in StationNames)
@@ -476,6 +544,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         }
     }
 
+    /// <summary>
+    /// Ensures that the current station is valid.
+    /// </summary>
     private void EnsureValidCurrentStation()
     {
         if (HasStationUpgrade(_currentStationName)) return;
@@ -483,11 +554,20 @@ public class StorageInterface : MonoBehaviour, Interactable
         _currentStationName = GetUnlockedStations().FirstOrDefault() ?? "None";
     }
 
+    /// <summary>
+    /// Get the unlocked stations
+    /// </summary>
+    /// <returns></returns>
     private IEnumerable<string> GetUnlockedStations()
     {
         return StationNames.Where(HasStationUpgrade);
     }
 
+    /// <summary>
+    /// Has an upgrade for a specific station
+    /// </summary>
+    /// <param name="stationName"></param>
+    /// <returns></returns>
     private bool HasStationUpgrade(string stationName)
     {
         return !string.IsNullOrEmpty(stationName)
@@ -495,6 +575,11 @@ public class StorageInterface : MonoBehaviour, Interactable
                && level > 0;
     }
 
+    /// <summary>
+    /// Get the station level for a specific station
+    /// </summary>
+    /// <param name="stationName"></param>
+    /// <returns></returns>
     private int GetStationLevel(string stationName)
     {
         return !string.IsNullOrEmpty(stationName)
@@ -503,6 +588,13 @@ public class StorageInterface : MonoBehaviour, Interactable
             : 0;
     }
 
+    /// <summary>
+    /// Try to get the upgrade info for an item.
+    /// </summary>
+    /// <param name="item">Upgrade item</param>
+    /// <param name="stationName">out station name</param>
+    /// <param name="stationLevel">out station level</param>
+    /// <returns></returns>
     private static bool TryGetUpgradeInfo(
         ItemDrop.ItemData item,
         out string stationName,
@@ -513,6 +605,7 @@ public class StorageInterface : MonoBehaviour, Interactable
 
         if (item == null) return false;
 
+        // If the m_customData dictionary contains the value
         if (item.m_customData.TryGetValue("DwarvenUpgrade", out var customStation))
         {
             stationName = customStation;
@@ -524,6 +617,7 @@ public class StorageInterface : MonoBehaviour, Interactable
             stationLevel = parsedLevel;
         }
 
+        // If the m_shared dictionary is not working, then use the table in the Plugin class
         if (!string.IsNullOrEmpty(stationName) && stationLevel > 0)
         {
             return true;
@@ -548,6 +642,11 @@ public class StorageInterface : MonoBehaviour, Interactable
         return !string.IsNullOrEmpty(stationName) && stationLevel > 0;
     }
 
+    /// <summary>
+    /// Get the display name for a station.
+    /// </summary>
+    /// <param name="stationName">station name</param>
+    /// <returns></returns>
     private static string GetStationDisplayName(string stationName)
     {
         var key = stationName switch
@@ -566,6 +665,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         return LocalizationManager.Instance.TryTranslate(key);
     }
 
+    /// <summary>
+    /// Create the main UI panel for the interface
+    /// </summary>
     private void CreatePanel()
     {
         _panel = GUIManager.Instance.CreateWoodpanel(
@@ -585,6 +687,7 @@ public class StorageInterface : MonoBehaviour, Interactable
             Mathf.Max(0, containerTransform.GetSiblingIndex() - 1)
         );
 
+        // Create the UI elements
         CreateTitle();
         CreateExtensionSummaryText();
         CreateUpgradeSlots();
@@ -592,9 +695,13 @@ public class StorageInterface : MonoBehaviour, Interactable
         CreateCloseButton();
     }
 
+    // Variables for the UI
     private GameObject _extensionSummaryObject;
     private Text _extensionSummaryText;
     
+    /// <summary>
+    /// Creates the summary text for the interface, like the number of extensions and added rows.
+    /// </summary>
     private void CreateExtensionSummaryText()
     {
         _extensionSummaryObject = GUIManager.Instance.CreateText(
@@ -621,6 +728,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         }
     }
 
+    /// <summary>
+    /// Create the title for the interface.
+    /// </summary>
     private void CreateTitle()
     {
         GUIManager.Instance.CreateText(
@@ -640,6 +750,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         );
     }
 
+    /// <summary>
+    /// Create the upgrade slots for the interface.
+    /// </summary>
     private void CreateUpgradeSlots()
     {
         const float slotSize = 64f;
@@ -688,6 +801,7 @@ public class StorageInterface : MonoBehaviour, Interactable
             icon.enabled = false;
             icon.raycastTarget = false;
 
+            // Station name
             var stationLabelObject = GUIManager.Instance.CreateText(
                 text: "Empty",
                 parent: _panel.transform,
@@ -710,6 +824,7 @@ public class StorageInterface : MonoBehaviour, Interactable
                 stationLabel.alignment = TextAnchor.MiddleLeft;
             }
 
+            // Station level
             var levelLabelObject = GUIManager.Instance.CreateText(
                 text: "",
                 parent: _panel.transform,
@@ -741,6 +856,10 @@ public class StorageInterface : MonoBehaviour, Interactable
         }
     }
 
+    /// <summary>
+    /// Event for when an upgrade slot is clicked.
+    /// </summary>
+    /// <param name="index">upgrade slot index</param>
     private void OnUpgradeSlotClicked(int index)
     {
         if (_upgradeSlots == null) return;
@@ -795,6 +914,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         RefreshUpgradeSlots();
     }
 
+    /// <summary>
+    /// Refresh the upgrade slots for the interface.
+    /// </summary>
     private void RefreshUpgradeSlots()
     {
         if (_upgradeSlots == null) return;
@@ -865,6 +987,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         }
     }
 
+    /// <summary>
+    /// Create the dropdown for the station selection.
+    /// </summary>
     private void CreateStationDropdown()
     {
         _stationDropdown = GUIManager.Instance.CreateDropDown(
@@ -884,6 +1009,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         dropdown.onValueChanged.AddListener(OnDropdownValueChanged);
     }
 
+    /// <summary>
+    /// Refresh the station dropdown.
+    /// </summary>
     private void RefreshStationDropdown()
     {
         var dropdown = StationDropdownObject;
@@ -912,6 +1040,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         _suppressDropdownCallback = false;
     }
 
+    /// <summary>
+    /// Create the close button for the interface.
+    /// </summary>
     private void CreateCloseButton()
     {
         var buttonObject = GUIManager.Instance.CreateButton(
@@ -931,6 +1062,10 @@ public class StorageInterface : MonoBehaviour, Interactable
         }
     }
 
+    /// <summary>
+    /// When the dropdown value is changed, update the current station name.
+    /// </summary>
+    /// <param name="index">dropdown index</param>
     private void OnDropdownValueChanged(int index)
     {
         if (_suppressDropdownCallback) return;
@@ -939,6 +1074,9 @@ public class StorageInterface : MonoBehaviour, Interactable
         SetCraftingStation(_currentDropdownOptions[index]);
     }
 
+    /// <summary>
+    /// Apply the current crafting station to the player.
+    /// </summary>
     private void ApplyCurrentCraftingStation()
     {
         if (_currentStationName == "None")
@@ -950,6 +1088,10 @@ public class StorageInterface : MonoBehaviour, Interactable
         SetCraftingStation(_currentStationName);
     }
 
+    /// <summary>
+    /// Set the crafting station to use for the interface
+    /// </summary>
+    /// <param name="stationName">station name</param>
     private void SetCraftingStation(string stationName)
     {
         if (string.IsNullOrEmpty(stationName) || stationName == "None")
@@ -986,18 +1128,27 @@ public class StorageInterface : MonoBehaviour, Interactable
         InventoryGui.instance?.SetupCrafting();
     }
 
+    /// <summary>
+    /// Clear the current crafting station from the player.
+    /// </summary>
     private static void ClearPlayerCraftingStation()
     {
         Player.m_localPlayer?.SetCraftingStation(null);
         InventoryGui.instance?.SetupCrafting();
     }
 
+    /// <summary>
+    /// Check if the player has the upgrade for a station.
+    /// </summary>
     private static void ResetPlayerCrafting()
     {
         Instance = null;
         ClearPlayerCraftingStation();
     }
 
+    /// <summary>
+    /// Helper class for UI
+    /// </summary>
     private class UpgradeSlotUI
     {
         public Image Icon;

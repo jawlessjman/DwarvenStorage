@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -424,12 +425,37 @@ public class Plugin : BaseUnityPlugin
             LocalizationManager.Instance.GetLocalization().AddJsonFile("English", englishLocalized);
         }
         
+        // Load translations for other languages
+        LoadTranslations();
+        
         // Create Prefabs
         PrefabManager.OnVanillaPrefabsAvailable += CreateInterface;
         PrefabManager.OnVanillaPrefabsAvailable += CreateStorageExtensions;
         PrefabManager.OnVanillaPrefabsAvailable += CreateUpgradeItems;
         
         Logger.LogInfo($"Plugin {ModName}-{ModVersion} is loaded!");
+    }
+    
+    /// <summary>
+    /// Loads translations from the Translations folder.
+    /// </summary>
+    private void LoadTranslations()
+    {
+        var root = Path.Combine(
+            Path.GetDirectoryName(Info.Location)!,
+            "Translations"
+        );
+
+        if (!Directory.Exists(root))
+        {
+            return;
+        }
+        
+        foreach (var file in Directory.GetFiles(root, "*.json", SearchOption.AllDirectories))
+        {
+            Logger.LogInfo($"Loading translation file: {file}");
+            LocalizationManager.Instance.GetLocalization().AddFileByPath(file, isJson:true);
+        }
     }
 
     /// <summary>

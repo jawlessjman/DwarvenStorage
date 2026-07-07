@@ -32,11 +32,20 @@ public class StorageInterfaceExtension : MonoBehaviour, Hoverable
         _cachedHoverName = LocalizationManager.Instance.TryTranslate(hoverName);
     }
 
+    /// <summary>
+    /// Is this extension owned by a specific storage interface?
+    /// </summary>
+    /// <param name="storageInterface">an instance of a storage interface</param>
+    /// <returns>If it is owned by a specific interface</returns>
     public bool IsOwnedBy(StorageInterface storageInterface)
     {
         return storageInterface && _owningInterface == storageInterface;
     }
 
+    /// <summary>
+    /// Refresh the owner for the extension
+    /// </summary>
+    /// <param name="force">If the extension owner should be forced to change</param>
     public void RefreshOwner(bool force = false)
     {
         if (!force && Time.time < _nextOwnerRefreshTime)
@@ -64,6 +73,11 @@ public class StorageInterfaceExtension : MonoBehaviour, Hoverable
             .FirstOrDefault();
     }
 
+    /// <summary>
+    /// Check if the extension is in range of a storage interface.
+    /// </summary>
+    /// <param name="storageInterface">storage interface</param>
+    /// <returns>If the interface is in range of the extension</returns>
     private bool IsInRangeOf(StorageInterface storageInterface)
     {
         if (!storageInterface) return false;
@@ -74,6 +88,10 @@ public class StorageInterfaceExtension : MonoBehaviour, Hoverable
         ) <= range;
     }
 
+    /// <summary>
+    /// Release the ownership of the extension.
+    /// </summary>
+    /// <param name="storageInterface"></param>
     public void ReleaseOwner(StorageInterface storageInterface)
     {
         if (_owningInterface == storageInterface)
@@ -82,6 +100,10 @@ public class StorageInterfaceExtension : MonoBehaviour, Hoverable
         }
     }
 
+    /// <summary>
+    /// Get the hover text for the extension.
+    /// </summary>
+    /// <returns>hover text</returns>
     public string GetHoverText()
     {
         RefreshOwner();
@@ -93,6 +115,10 @@ public class StorageInterfaceExtension : MonoBehaviour, Hoverable
         return _cachedHoverText + status;
     }
 
+    /// <summary>
+    /// Get the hover name for the extension.
+    /// </summary>
+    /// <returns>hover name</returns>
     public string GetHoverName()
     {
         RefreshOwner();
