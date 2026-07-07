@@ -17,7 +17,7 @@ public class Plugin : BaseUnityPlugin
 
     public const string ModGuid = "jawlessjman.DwarvenStorage";
     public const string ModName = "DwarvenStorage";
-    public const string ModVersion = "1.0.0";
+    public const string ModVersion = "1.0.1";
     
     public static readonly Dictionary<string, string> UpgradeStationsByPrefabName = new();
     public static readonly Dictionary<string, int> UpgradeAmountsByPrefabName = new();
@@ -100,7 +100,7 @@ public class Plugin : BaseUnityPlugin
         },
         new() {Name="$workbench_upgrade_3", CraftingStation = CraftingStations.Workbench, ItemRequirements =
             [
-                new ItemRequirements { Name = "$workbench_upgrade_3", Amount = 1, UpgradeAmount = 0 },
+                new ItemRequirements { Name = "$workbench_upgrade_2", Amount = 1, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Wood", Amount = 5, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Flint", Amount = 7, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "LeatherScraps", Amount = 10, UpgradeAmount = 0 },
@@ -313,7 +313,7 @@ public class Plugin : BaseUnityPlugin
         },
         new() {Name="$blackforge_upgrade_2", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
             [
-                new ItemRequirements { Name = "$blackforge_upgrade_1", Amount = 5, UpgradeAmount = 0 },
+                new ItemRequirements { Name = "$blackforge_upgrade_1", Amount = 1, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Iron", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Copper", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "BlackMarble", Amount = 2, UpgradeAmount = 0 },
@@ -323,7 +323,7 @@ public class Plugin : BaseUnityPlugin
         },
         new() {Name="$blackforge_upgrade_3", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
             [
-                new ItemRequirements { Name = "$blackforge_upgrade_2", Amount = 5, UpgradeAmount = 0 },
+                new ItemRequirements { Name = "$blackforge_upgrade_2", Amount = 1, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Iron", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Copper", Amount = 4, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "MechanicalSpring", Amount = 1, UpgradeAmount = 0 },
@@ -333,7 +333,7 @@ public class Plugin : BaseUnityPlugin
         },
         new() {Name="$blackforge_upgrade_4", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
             [
-                new ItemRequirements { Name = "$blackforge_upgrade_3", Amount = 5, UpgradeAmount = 0 },
+                new ItemRequirements { Name = "$blackforge_upgrade_3", Amount = 1, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "BlackMarble", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "FlametalNew", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Blackwood", Amount = 2, UpgradeAmount = 0 },
@@ -344,7 +344,7 @@ public class Plugin : BaseUnityPlugin
         },
         new() {Name="$blackforge_upgrade_5", CraftingStation = CraftingStations.BlackForge, ItemRequirements =
             [
-                new ItemRequirements { Name = "$blackforge_upgrade_4", Amount = 5, UpgradeAmount = 0 },
+                new ItemRequirements { Name = "$blackforge_upgrade_4", Amount = 1, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "GemstoneRed", Amount = 1, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "FlametalNew", Amount = 2, UpgradeAmount = 0 },
                 new ItemRequirements { Name = "Blackwood", Amount = 4, UpgradeAmount = 0 },

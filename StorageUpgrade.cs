@@ -14,7 +14,7 @@ public class StorageUpgrade
     public string SpriteName;
 }
 
-public class ItemRequirements()
+public class ItemRequirements
 {
     public string Name;
     public int Amount;

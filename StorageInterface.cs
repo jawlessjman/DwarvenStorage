@@ -291,19 +291,17 @@ public class StorageInterface : MonoBehaviour, Interactable
         _hasBeenOpened = true;
         Instance = this;
 
-        RebuildStorageSizeFromExtensions();
-
-        RebuildStationUpgrades();
-        EnsureValidCurrentStation();
-        
-        // Rebuild the container size
-        RebuildStorageSizeFromExtensions();
-
         if (_panel == null)
         {
             CreatePanel();
             _panel.SetActive(false);
         }
+        
+        RebuildStationUpgrades();
+        EnsureValidCurrentStation();
+        
+        // Rebuild the container size
+        RebuildStorageSizeFromExtensions();
 
         // Refresh crafting stations and upgrades
         RefreshStationDropdown();
@@ -464,11 +462,14 @@ public class StorageInterface : MonoBehaviour, Interactable
 
         foreach (var item in itemsToDrop)
         {
-            inventory.RemoveItem(item);
-
             var dropPosition = transform.position + transform.forward * 1.5f + Vector3.up * 0.75f;
 
-            ItemDrop.DropItem(item, item.m_stack, dropPosition, Quaternion.identity);
+            var dropItem = item.Clone();
+            dropItem.m_stack = item.m_stack;
+
+            inventory.RemoveItem(item);
+
+            ItemDrop.DropItem(dropItem, dropItem.m_stack, dropPosition, Quaternion.identity);
 
             Plugin.Logger.LogInfo($"Dropped item {item.m_shared.m_name} outside bounds");
         }
@@ -856,63 +857,117 @@ public class StorageInterface : MonoBehaviour, Interactable
         }
     }
 
-    /// <summary>
-    /// Event for when an upgrade slot is clicked.
-    /// </summary>
-    /// <param name="index">upgrade slot index</param>
     private void OnUpgradeSlotClicked(int index)
+{
+    if (_upgradeSlots == null) return;
+
+    var upgradeInventory = _upgradeSlots.GetInventory();
+    if (upgradeInventory == null) return;
+
+    var dragItem = InventoryGui.instance?.m_dragItem;
+    var dragInventory = InventoryGui.instance?.m_dragInventory;
+
+    if (dragItem != null)
     {
-        if (_upgradeSlots == null) return;
-
-        var inventory = _upgradeSlots.GetInventory();
-        if (inventory == null) return;
-
-        var dragItem = InventoryGui.instance?.m_dragItem;
-
-        if (dragItem != null)
+        if (!TryGetUpgradeInfo(dragItem, out var stationName, out var stationLevel))
         {
-            if (!TryGetUpgradeInfo(dragItem, out var stationName, out var stationLevel))
-            {
-                Player.m_localPlayer?.Message(MessageHud.MessageType.Center, "Invalid upgrade item");
-                return;
-            }
-
-            var existing = inventory.GetItemAt(0, index);
-            if (existing != null)
-            {
-                Player.m_localPlayer?.Message(MessageHud.MessageType.Center, "Upgrade slot is occupied");
-                return;
-            }
-
-            var clone = dragItem.Clone();
-            clone.m_stack = 1;
-            clone.m_gridPos = new Vector2i(0, index);
-            clone.m_customData["DwarvenUpgrade"] = stationName;
-            clone.m_customData["DwarvenUpgradeLevel"] = stationLevel.ToString();
-
-            inventory.AddItem(clone);
-
-            Player.m_localPlayer?.GetInventory().RemoveItem(dragItem, 1);
-            InventoryGui.instance.SetupDragItem(null, null, 1);
-
-            _upgradeSlots.Save();
-            _upgradeSlots.InvokeChanged();
-
-            RefreshUpgradeSlots();
+            Player.m_localPlayer?.Message(MessageHud.MessageType.Center, "Invalid upgrade item");
             return;
         }
 
-        var item = inventory.GetItemAt(0, index);
-        if (item == null) return;
+        var existing = upgradeInventory.GetItemAt(0, index);
+        if (existing != null)
+        {
+            Player.m_localPlayer?.Message(MessageHud.MessageType.Center, "Upgrade slot is occupied");
+            return;
+        }
 
-        inventory.RemoveItem(item);
-        Player.m_localPlayer?.GetInventory().AddItem(item);
+        var clone = dragItem.Clone();
+        clone.m_stack = 1;
+        clone.m_gridPos = new Vector2i(0, index);
+        clone.m_customData["DwarvenUpgrade"] = stationName;
+        clone.m_customData["DwarvenUpgradeLevel"] = stationLevel.ToString();
+
+        if (!upgradeInventory.AddItem(clone))
+        {
+            Player.m_localPlayer?.Message(MessageHud.MessageType.Center, "Could not add upgrade item");
+            return;
+        }
+
+        var removedFromSource = false;
+
+        if (dragInventory != null)
+        {
+            removedFromSource = dragInventory.RemoveItem(dragItem, 1);
+            
+            if (removedFromSource && dragInventory == _container?.m_inventory)
+            {
+                MarkStorageChanged();
+            }
+        }
+
+        if (!removedFromSource)
+        {
+            removedFromSource = Player.m_localPlayer != null &&
+                                Player.m_localPlayer.GetInventory().RemoveItem(dragItem, 1);
+        }
+
+        if (!removedFromSource && _container?.m_inventory != null)
+        {
+            removedFromSource = _container.m_inventory.RemoveItem(dragItem, 1);
+            MarkStorageChanged();
+        }
+
+        if (!removedFromSource)
+        {
+            // Roll back the upgrade slot insert if we failed to remove the source item.
+            upgradeInventory.RemoveItem(clone);
+            Player.m_localPlayer?.Message(MessageHud.MessageType.Center, "Could not move upgrade item");
+            return;
+        }
+
+        InventoryGui.instance.SetupDragItem(null, null, 1);
 
         _upgradeSlots.Save();
         _upgradeSlots.InvokeChanged();
 
         RefreshUpgradeSlots();
+        return;
     }
+
+    var item = upgradeInventory.GetItemAt(0, index);
+    if (item == null) return;
+
+    upgradeInventory.RemoveItem(item);
+
+    var addedToPlayer = Player.m_localPlayer != null &&
+                        Player.m_localPlayer.GetInventory().AddItem(item);
+
+    if (!addedToPlayer)
+    {
+        var addedToStorage = _container?.m_inventory != null &&
+                             _container.m_inventory.AddItem(item);
+
+        if (addedToStorage)
+        {
+            MarkStorageChanged();
+        }
+        else
+        {
+            ItemDrop.DropItem(
+                item,
+                item.m_stack,
+                transform.position + transform.forward * 1.2f + Vector3.up * 0.75f,
+                Quaternion.identity
+            );
+        }
+    }
+
+    _upgradeSlots.Save();
+    _upgradeSlots.InvokeChanged();
+
+    RefreshUpgradeSlots();
+}
 
     /// <summary>
     /// Refresh the upgrade slots for the interface.

@@ -115,6 +115,7 @@ public static class AssetHolder
             var sprite = _bundle.LoadAsset<Sprite>(path);
             if (sprite == null)
             {
+                Plugin.Logger.LogError($"Failed to load sprite: key={key}, path={path}");
                 continue;
             }
             
@@ -132,6 +133,7 @@ public static class AssetHolder
             var prefab = _bundle.LoadAsset<GameObject>(path);
             if (prefab == null)
             {
+                Plugin.Logger.LogError($"Failed to load prefab: key={key}, path={path}");
                 continue;
             }
 
