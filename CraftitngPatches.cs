@@ -15,9 +15,6 @@ public static class CraftingPatches
     private static readonly System.Reflection.MethodInfo ContainerSaveMethod =
         AccessTools.Method(typeof(Container), "Save");
 
-    private static readonly System.Reflection.MethodInfo InventoryChangedMethod =
-        AccessTools.Method(typeof(Inventory), "Changed");
-
     /// <summary>
     /// Check if the crafting station is usable
     /// </summary>
@@ -75,7 +72,8 @@ public static class CraftingPatches
     /// <param name="___m_knownMaterial"></param>
     /// <param name="amount"></param>
     [HarmonyPostfix]
-    [HarmonyPatch(typeof(Player), nameof(Player.HaveRequirementItems))]
+    [HarmonyPatch(typeof(Player), "HaveRequirementItems",
+        new[] { typeof(Recipe), typeof(bool), typeof(int), typeof(int) })]
     private static void HaveRequirementItemsPostfix(
         Player __instance,
         ref bool __result,
@@ -276,7 +274,7 @@ public static class CraftingPatches
 
         try
         {
-            InventoryChangedMethod?.Invoke(inventory, Array.Empty<object>());
+            InventoryAccess.NotifyChanged(inventory);
         }
         catch (Exception e)
         {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Jotunn.Managers;
 using UnityEngine;
 using UnityEngine.UI;
@@ -26,9 +25,6 @@ public class StorageInterface : MonoBehaviour, Interactable
     private ZNetView _zNetView;
 
     private float _extensionScanTimer;
-
-    private int _currentRows = DefaultRows;
-    private int _currentColumns = DefaultColumns;
 
     private static readonly string[] StationNames =
     [
@@ -88,16 +84,13 @@ public class StorageInterface : MonoBehaviour, Interactable
         _container.m_width = MaxColumns;
         _container.m_height = MaxRows;
 
-        // Needed for the crafting station to work correctly
-        if (_container.m_inventory != null)
+        // AddComponent runs Container.Awake before we can configure its size.
+        // Update the existing inventory too. Keep room for saved extension slots
+        // during loading; OpenInterface applies the actual extension capacity.
+        if (_container.GetInventory() != null)
         {
-            _container.m_inventory.m_name = "$piece_dwarven_interface";
-            _container.m_inventory.m_width = MaxColumns;
-            _container.m_inventory.m_height = MaxRows;
+            InventoryAccess.SetSize(_container.GetInventory(), MaxColumns, MaxRows);
         }
-
-        _currentColumns = MaxColumns;
-        _currentRows = MaxRows;
 
         _zNetView = GetComponent<ZNetView>();
 
@@ -105,7 +98,6 @@ public class StorageInterface : MonoBehaviour, Interactable
         _craftingStation = gameObject.AddComponent<CraftingStation>();
         _craftingStation.m_name = "$piece_workbench";
         _craftingStation.m_rangeBuild = 0f;
-        _craftingStation.m_buildRange = 0f;
         _craftingStation.m_discoverRange = 30f;
         _craftingStation.m_useDistance = 30f;
         _craftingStation.m_craftRequireRoof = false;
@@ -162,7 +154,7 @@ public class StorageInterface : MonoBehaviour, Interactable
         }
 
         // Which items to drop (the upgrades) items drop on their own
-        var itemsToDrop = inventory.m_inventory
+        var itemsToDrop = inventory.GetAllItems()
             .Where(item => item != null)
             .ToList();
 
@@ -291,7 +283,8 @@ public class StorageInterface : MonoBehaviour, Interactable
         _hasBeenOpened = true;
         Instance = this;
 
-        if (_panel == null)
+        var createdPanel = _panel == null;
+        if (createdPanel)
         {
             CreatePanel();
             _panel.SetActive(false);
@@ -311,6 +304,7 @@ public class StorageInterface : MonoBehaviour, Interactable
         InventoryGui.instance.Show(_container);
 
         _panel.SetActive(true);
+        if (createdPanel) CenterPanel();
 
         ApplyCurrentCraftingStation();
     }
@@ -400,10 +394,12 @@ public class StorageInterface : MonoBehaviour, Interactable
     /// <param name="columns"></param>
     private void ResizeStorage(int rows, int columns)
     {
-        if (!_container || _container.m_inventory == null) return;
-        if (_currentColumns == columns && _currentRows == rows) return;
+        if (!_container || _container.GetInventory() == null) return;
+        var inventory = _container.GetInventory();
+        if (inventory.GetWidth() == columns && inventory.GetHeight() == rows &&
+            _container.m_width == columns && _container.m_height == rows) return;
 
-        var isShrinking = _currentColumns > columns || _currentRows > rows;
+        var isShrinking = inventory.GetWidth() > columns || inventory.GetHeight() > rows;
 
         // If the size is smaller than drop the items that were in those slots
         if (isShrinking)
@@ -416,20 +412,15 @@ public class StorageInterface : MonoBehaviour, Interactable
             }
         }
 
-        _currentRows = rows;
-        _currentColumns = columns;
-
         _container.m_width = columns;
         _container.m_height = rows;
-
-        _container.m_inventory.m_width = columns;
-        _container.m_inventory.m_height = rows;
+        InventoryAccess.SetSize(inventory, columns, rows);
 
         MarkStorageChanged();
 
         if (InventoryGui.instance && InventoryGui.instance.IsContainerOpen())
         {
-            InventoryGui.instance.SetupCrafting();
+            InventoryGuiAccess.RefreshCrafting(InventoryGui.instance);
         }
 
         Plugin.Logger.LogInfo($"Storage resized to {columns}x{rows}");
@@ -442,12 +433,12 @@ public class StorageInterface : MonoBehaviour, Interactable
     /// <param name="rows"></param>
     private void DropItemsOutsideBounds(int columns, int rows)
     {
-        var inventory = _container.m_inventory;
+        var inventory = _container.GetInventory();
         if (inventory == null) return;
 
         var itemsToDrop = new List<ItemDrop.ItemData>();
 
-        foreach (var item in inventory.m_inventory)
+        foreach (var item in inventory.GetAllItems())
         {
             if (item == null) continue;
 
@@ -484,19 +475,11 @@ public class StorageInterface : MonoBehaviour, Interactable
 
         try
         {
-            var saveMethod = typeof(Container).GetMethod(
-                "Save",
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
+            var inventory = _container.GetInventory();
+            if (inventory == null) return;
 
-            saveMethod?.Invoke(_container, Array.Empty<object>());
-
-            var changedMethod = typeof(Inventory).GetMethod(
-                "Changed",
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
-
-            changedMethod?.Invoke(_container.m_inventory, Array.Empty<object>());
+            // Container subscribes to this notification and saves on the owner.
+            InventoryAccess.NotifyChanged(inventory);
         }
         catch (Exception e)
         {
@@ -536,7 +519,7 @@ public class StorageInterface : MonoBehaviour, Interactable
         var inventory = _upgradeSlots.GetInventory();
         if (inventory == null) return;
 
-        foreach (var item in inventory.m_inventory)
+        foreach (var item in inventory.GetAllItems())
         {
             if (!TryGetUpgradeInfo(item, out var stationName, out var stationLevel)) continue;
             if (!_stationLevels.ContainsKey(stationName)) continue;
@@ -671,8 +654,9 @@ public class StorageInterface : MonoBehaviour, Interactable
     /// </summary>
     private void CreatePanel()
     {
+        var containerTransform = InventoryGui.instance.m_container.transform;
         _panel = GUIManager.Instance.CreateWoodpanel(
-            parent: InventoryGui.instance.transform,
+            parent: containerTransform.parent,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
             position: Vector2.zero,
@@ -681,9 +665,6 @@ public class StorageInterface : MonoBehaviour, Interactable
             draggable: true
         );
 
-        var containerTransform = InventoryGui.instance.m_container.transform;
-
-        _panel.transform.SetParent(containerTransform.parent, false);
         _panel.transform.SetSiblingIndex(
             Mathf.Max(0, containerTransform.GetSiblingIndex() - 1)
         );
@@ -694,6 +675,23 @@ public class StorageInterface : MonoBehaviour, Interactable
         CreateUpgradeSlots();
         CreateStationDropdown();
         CreateCloseButton();
+    }
+
+    private void CenterPanel()
+    {
+        // The container's parent need not fill the screen. Center against the
+        // canvas after layout, retaining the sibling order and drag behavior.
+        Canvas.ForceUpdateCanvases();
+        var panelRect = _panel.GetComponent<RectTransform>();
+        panelRect.anchorMin = panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+        panelRect.pivot = new Vector2(0.5f, 0.5f);
+        panelRect.anchoredPosition = Vector2.zero;
+
+        var canvas = _panel.GetComponentInParent<Canvas>();
+        if (canvas && canvas.rootCanvas.transform is RectTransform canvasRect)
+        {
+            panelRect.position = canvasRect.TransformPoint(canvasRect.rect.center);
+        }
     }
 
     // Variables for the UI
@@ -864,8 +862,9 @@ public class StorageInterface : MonoBehaviour, Interactable
     var upgradeInventory = _upgradeSlots.GetInventory();
     if (upgradeInventory == null) return;
 
-    var dragItem = InventoryGui.instance?.m_dragItem;
-    var dragInventory = InventoryGui.instance?.m_dragInventory;
+    var inventoryGui = InventoryGui.instance;
+    var dragItem = InventoryGuiAccess.GetDragItem(inventoryGui);
+    var dragInventory = InventoryGuiAccess.GetDragInventory(inventoryGui);
 
     if (dragItem != null)
     {
@@ -900,7 +899,7 @@ public class StorageInterface : MonoBehaviour, Interactable
         {
             removedFromSource = dragInventory.RemoveItem(dragItem, 1);
             
-            if (removedFromSource && dragInventory == _container?.m_inventory)
+            if (removedFromSource && dragInventory == _container?.GetInventory())
             {
                 MarkStorageChanged();
             }
@@ -912,9 +911,9 @@ public class StorageInterface : MonoBehaviour, Interactable
                                 Player.m_localPlayer.GetInventory().RemoveItem(dragItem, 1);
         }
 
-        if (!removedFromSource && _container?.m_inventory != null)
+        if (!removedFromSource && _container?.GetInventory() != null)
         {
-            removedFromSource = _container.m_inventory.RemoveItem(dragItem, 1);
+            removedFromSource = _container.GetInventory().RemoveItem(dragItem, 1);
             MarkStorageChanged();
         }
 
@@ -926,7 +925,7 @@ public class StorageInterface : MonoBehaviour, Interactable
             return;
         }
 
-        InventoryGui.instance.SetupDragItem(null, null, 1);
+        InventoryGuiAccess.ClearDragItem(inventoryGui);
 
         _upgradeSlots.Save();
         _upgradeSlots.InvokeChanged();
@@ -945,8 +944,8 @@ public class StorageInterface : MonoBehaviour, Interactable
 
     if (!addedToPlayer)
     {
-        var addedToStorage = _container?.m_inventory != null &&
-                             _container.m_inventory.AddItem(item);
+        var addedToStorage = _container?.GetInventory() != null &&
+                             _container.GetInventory().AddItem(item);
 
         if (addedToStorage)
         {
@@ -1180,7 +1179,7 @@ public class StorageInterface : MonoBehaviour, Interactable
         _currentStationName = stationName;
 
         Player.m_localPlayer?.SetCraftingStation(_craftingStation);
-        InventoryGui.instance?.SetupCrafting();
+        InventoryGuiAccess.RefreshCrafting(InventoryGui.instance);
     }
 
     /// <summary>
@@ -1189,7 +1188,7 @@ public class StorageInterface : MonoBehaviour, Interactable
     private static void ClearPlayerCraftingStation()
     {
         Player.m_localPlayer?.SetCraftingStation(null);
-        InventoryGui.instance?.SetupCrafting();
+        InventoryGuiAccess.RefreshCrafting(InventoryGui.instance);
     }
 
     /// <summary>

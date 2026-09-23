@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net462</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>DwarvenStorage</AssemblyName>
     <Product>My first plugin</Product>
     <Version>1.0.1</Version>
@@ -20,25 +20,39 @@
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
     <PackageReference Include="UnityEngine.Modules" Version="6000.0.62" IncludeAssets="compile" />
-    <PackageReference Include="ValheimGameLibs" Version="0.221.4" />
-  </ItemGroup>
-  
-  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
   </ItemGroup>
   
   <ItemGroup>
+    <Reference Include="assembly_utils">
+      <HintPath>D:\Projects\Valheim\Valheim_Data\Managed\assembly_utils.dll</HintPath>
+    </Reference>
     <Reference Include="assembly_valheim">
-      <HintPath>D:\SteamLibrary\steamapps\common\Valheim\Valheim_Data\Managed\assembly_valheim.dll</HintPath>
+      <HintPath>D:\Projects\Valheim\Valheim_Data\Managed\assembly_valheim.dll</HintPath>
     </Reference>
     <Reference Include="Jotunn">
-      <HintPath>D:\SteamLibrary\steamapps\common\Valheim\BepInEx\plugins\Jotunn.dll</HintPath>
+      <HintPath>D:\Projects\Valheim\BepInEx\plugins\Jotunn.dll</HintPath>
+    </Reference>
+    <Reference Include="SoftReferenceableAssets">
+      <HintPath>D:\Projects\Valheim\Valheim_Data\Managed\SoftReferenceableAssets.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>D:\SteamLibrary\steamapps\common\Valheim\Valheim_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <HintPath>D:\Projects\Valheim\Valheim_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>D:\Projects\Valheim\Valheim_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>D:\SteamLibrary\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>D:\Projects\Valheim\Valheim_Data\Managed\UnityEngine.UI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Valheim and BepInEx supply these assemblies and their runtime dependencies.
+       Compile against the explicit references without resolving or copying the
+       game's dependency tree using the desktop .NET reference assemblies. -->
+  <ItemGroup>
+    <Reference Update="assembly_utils;assembly_valheim;Jotunn;SoftReferenceableAssets;Unity.TextMeshPro;UnityEngine;UnityEngine.UI">
+      <ExternallyResolved>true</ExternallyResolved>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
   
