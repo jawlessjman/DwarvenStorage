@@ -129,4 +129,9 @@ public class StorageInterfaceExtension : MonoBehaviour, Hoverable
 
         return _cachedHoverName + status;
     }
+
+    public float GetHoverOffset()
+    {
+        return 0.1f;
+    }
 }
